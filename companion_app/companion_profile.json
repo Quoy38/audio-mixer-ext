@@ -1,0 +1,28 @@
+{
+  "_README": "CANONICAL companion runtime contract — the SINGLE SOURCE OF TRUTH for the values that must agree across the extension, the server, the LaunchAgent plist, and the release-gate scripts. Config drift between these consumers (famously overlap 0.1 vs 0.25 in the installed plist) silently disables the Pro engine because popup.js isCompanionProfileLocked() requires an EXACT match. When you intentionally change any value here, you MUST update every consumer listed in _consumers and re-run checkpoints/release_gate.sh. checkpoints/check_profile_drift.sh compares all live/on-disk sources against this file.",
+  "port": 48231,
+  "model": "htdemucs",
+  "profile": {
+    "split": true,
+    "fast_short_clips": false,
+    "fast_short_max_seconds": 75,
+    "fast_medium_clips": true,
+    "fast_medium_max_seconds": 180,
+    "fast_medium_segment_seconds": 30,
+    "overlap": 0.25,
+    "device": "mps"
+  },
+  "runtime_safety_env": {
+    "PYTORCH_MPS_HIGH_WATERMARK_RATIO": "0.0",
+    "PYTORCH_ENABLE_MPS_FALLBACK": "1"
+  },
+  "_consumers": {
+    "popup.js": "COMPANION_LOCK_PROFILE (~L549) + isCompanionProfileLocked() (~L587) must match the 8 'profile' fields EXACTLY.",
+    "server.py": "GET /v1/health (~L542) returns these; env defaults ~L41-75 (DEMUCS_OVERLAP default 0.25, etc.).",
+    "plist": "com.audiomixerext.companion.plist EnvironmentVariables (AUDIO_MIXER_DEMUCS_*). DEVICE is templated at install (COMPANION_DEMUCS_DEVICE -> mps).",
+    "verify_voice_isolation_lock.sh": "asserts overlap:0.25 and the fast_* values against a live /v1/health.",
+    "smoke_companion_launchd.sh": "asserts the same locked profile against a live /v1/health."
+  },
+  "_dependency_lock": "companion_app/requirements.lock is the pinned, reproducible dependency set (torch==2.2.2 etc.). requirements.txt is loose and only a human spec.",
+  "_device_policy": "profile.device ('mps') is the REFERENCE/preferred device and the value popup.js COMPANION_LOCK_PROFILE.device expects. The INSTALLED device is auto-detected by install-macos-service.sh: mps on Apple Silicon (macOS >= 12.3), else cpu. Live /v1/health may therefore report 'mps' OR 'cpu' — both are accepted by the extension (mps=locked, cpu=cpu-fallback) and by the gate scripts (verify_voice_isolation_lock.sh, smoke_companion_launchd.sh, check_profile_drift.sh). cuda/directml are Windows (Phase D) and not yet accepted."
+}

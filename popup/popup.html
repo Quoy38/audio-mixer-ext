@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Audio Mixer</title>
+    <link rel="stylesheet" href="popup.css" />
+    <!-- ONNX Runtime Web for AI voice isolation -->
+    <script src="../libs/ort.min.js"></script>
+    <!-- Signalsmith Stretch: MIT-licensed WASM pitch shifter -->
+    <script src="../libs/SignalsmithStretch.js"></script>
+  </head>
+  <body>
+    <div class="liquid-bezel">
+      <div class="tech-stripes"></div>
+      <div class="wet-glare"></div>
+
+      <div class="etch-corner ec-bl">𝄞</div>
+      <div class="etch-corner ec-br">𝄞</div>
+
+      <div class="etch-track track-top">
+        <div class="etch-strip etch-top">~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~</div>
+      </div>
+
+      <div class="etch-track track-bottom">
+        <div class="etch-strip etch-bottom">~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~ ♫ • ♪ ~ 𝄞 ~</div>
+      </div>
+
+      <div class="etch-track track-left">
+        <div class="etch-strip etch-left">~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~</div>
+      </div>
+
+      <div class="etch-track track-right">
+        <div class="etch-strip etch-right">~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~♫•♪~𝄞~</div>
+      </div>
+
+      <div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div>
+      <div class="bubble b4"></div><div class="bubble b5"></div><div class="bubble b6"></div>
+      <div class="bubble b7"></div><div class="bubble b8"></div>
+      <div class="bubble b11"></div><div class="bubble b12"></div><div class="bubble b13"></div>
+      <div class="bubble b14"></div><div class="bubble b15"></div><div class="bubble b16"></div>
+      <div class="bubble b17"></div><div class="bubble b18"></div>
+      <div class="bubble t1"></div><div class="bubble t2"></div><div class="bubble t3"></div>
+      <div class="bubble t4"></div><div class="bubble t5"></div><div class="bubble t6"></div>
+      <div class="bubble bt1"></div><div class="bubble bt2"></div><div class="bubble bt3"></div>
+      <div class="bubble bt4"></div><div class="bubble bt5"></div><div class="bubble bt6"></div>
+
+      <div class="inner-cutout">
+        <div class="center-plane">
+          <main class="panel">
+            <header class="panel-header">
+              <h1>Audio Mixer</h1>
+              <p id="status" class="status">Idle</p>
+
+              <div class="ui-theme-switch" role="group" aria-label="Theme">
+                <button id="themeLightBtn" class="ui-segment-btn is-active" type="button" data-theme-value="light">Light</button>
+                <button id="themeDarkBtn" class="ui-segment-btn" type="button" data-theme-value="dark">Dark</button>
+              </div>
+
+              <nav class="top-tabs" aria-label="Top navigation tabs">
+                <button id="tabCaptureBtn" class="top-tab-btn is-active" type="button" data-tab-value="capture">Capture &amp; Edit</button>
+                <button id="tabFxBtn" class="top-tab-btn" type="button" data-tab-value="fx">FX &amp; Shapes</button>
+                <button id="tabAiBtn" class="top-tab-btn" type="button" data-tab-value="ai">AI &amp; Stems</button>
+              </nav>
+            </header>
+
+      <!-- Capture & Recording Section -->
+      <details id="captureSection" class="control-section accordion-section" data-tab="capture" open>
+        <summary>Audio Capture</summary>
+        <div class="section-body">
+        <p class="hint-text compact-hint">Start here each session. Capture must be active before recording and live AI processing.</p>
+        <div class="actions">
+          <button id="startCapture" type="button">Start Capture</button>
+          <button id="stopCapture" type="button" disabled>Stop</button>
+        </div>
+
+        <div class="actions single-action">
+          <button id="pauseBrowserAudio" type="button">Pause Browser Audio</button>
+        </div>
+
+        <div class="actions two-up" style="margin-top: 8px;">
+          <button id="skipBackCaptureMedia" class="capture-transport-btn" type="button" disabled>&#9198; -5s</button>
+          <button id="skipForwardCaptureMedia" class="capture-transport-btn" type="button" disabled>+5s &#9197;</button>
+        </div>
+
+        <div class="actions three-up">
+          <button
+            id="prevCaptureMediaTrack"
+            class="capture-transport-btn ipod-mini-btn"
+            type="button"
+            title="Previous Song"
+            aria-label="Previous Song"
+            disabled
+          >
+            <span class="ipod-glyph" aria-hidden="true">&#9198;</span>
+            <span class="ipod-label" aria-hidden="true">Last</span>
+          </button>
+          <button
+            id="restartCaptureMedia"
+            class="capture-transport-btn ipod-mini-btn"
+            type="button"
+            title="Restart Song"
+            aria-label="Restart Song"
+            disabled
+          >
+            <span class="ipod-glyph" aria-hidden="true">&#8634;</span>
+            <span class="ipod-label" aria-hidden="true">Restart</span>
+          </button>
+          <button
+            id="nextCaptureMediaTrack"
+            class="capture-transport-btn ipod-mini-btn"
+            type="button"
+            title="Next Song"
+            aria-label="Next Song"
+            disabled
+          >
+            <span class="ipod-glyph" aria-hidden="true">&#9197;</span>
+            <span class="ipod-label" aria-hidden="true">Next</span>
+          </button>
+        </div>
+
+        <p class="subsection-title">Recording</p>
+        <div class="actions recording-actions">
+          <button id="startRecording" type="button" disabled>Start Recording</button>
+          <button id="stopRecording" type="button" disabled>Stop Recording</button>
+        </div>
+        <p class="subsection-title">Recording Exports</p>
+        <div class="actions recording-actions">
+          <button id="downloadWav" type="button" disabled>Download WAV</button>
+          <button id="downloadMp3" type="button" disabled>Download MP3</button>
+        </div>
+        <p class="quirk-note">Chrome may close the popup when downloads start. Reopen the extension and your session will restore automatically.</p>
+        <p id="recordingStatus" class="status">Recording: not started</p>
+        </div>
+      </details>
+
+      <details id="recordedPlaybackSection" class="control-section accordion-section" data-tab="capture">
+        <summary>Recorded Playback & Waveform</summary>
+        <div class="section-body">
+        <p class="hint-text compact-hint">Load a file or last recording, then preview, scrub, and trim from one place.</p>
+        <div class="actions">
+          <input id="audioFileInput" type="file" accept="audio/*" />
+        </div>
+        <div class="actions single-action">
+          <button id="loadLastRecording" type="button" disabled>Load Last Recording</button>
+        </div>
+        <p id="loadedStatus" class="status">Loaded: none</p>
+
+        <details id="waveformContainer" class="waveform-container nested-accordion" style="display: none;">
+        <summary>Wavetable Visualizer & Trim</summary>
+        <div class="section-body">
+        <div class="waveform-info">
+          <span>Duration: <output id="totalDuration">0.0</output>s</span>
+          <span>Current: <output id="currentPlaybackTime">0.0</output>s</span>
+          <span id="trimmedDuration">Trimmed: 0.0s</span>
+        </div>
+
+        <div class="waveform-wrapper">
+          <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+          <input id="scrubberInput" type="range" min="0" max="100" step="0.1" value="0" class="scrubber-slider" />
+        </div>
+
+        <div class="waveform-timeline">
+          <span class="timeline-label">0s</span>
+          <span class="timeline-label" id="midpointLabel">-</span>
+          <span class="timeline-label" id="endLabel">-</span>
+        </div>
+
+        <div class="trim-controls">
+          <label class="control" for="trimStart">
+            <span>Trim Start (s)</span>
+            <input id="trimStart" type="range" min="0" max="1" step="0.001" value="0" />
+          </label>
+          <label class="control" for="trimEnd">
+            <span>Trim End (s)</span>
+            <input id="trimEnd" type="range" min="0" max="1" step="0.001" value="1" />
+          </label>
+        </div>
+
+        <div class="actions" style="margin-top: 8px;">
+          <button id="playLoadedAudio" type="button" disabled>&#9654; Play</button>
+          <button id="pauseLoadedAudio" type="button" disabled>&#9646;&#9646; Pause</button>
+          <button id="stopLoadedAudio" type="button" disabled>&#9632; Stop</button>
+        </div>
+        <div class="actions" style="margin-top: 8px;">
+          <button id="skipBackLoadedAudio" type="button" disabled>&#9198; -5s</button>
+          <button id="replayLoadedAudio" type="button" disabled>&#8634; Replay</button>
+          <button id="skipForwardLoadedAudio" type="button" disabled>+5s &#9197;</button>
+        </div>
+        </div>
+        </details>
+        </div>
+      </details>
+
+      <!-- Playback Controls Section -->
+      <details id="playbackShapingSection" class="control-section accordion-section" data-tab="fx">
+        <summary>Playback Shaping</summary>
+        <div class="section-body">
+        <label class="control" for="bass">
+          <span>Bass Boost</span>
+          <input id="bass" type="range" min="-12" max="18" step="1" value="0" />
+          <output id="bassValue">0 dB</output>
+        </label>
+
+        <label class="control" for="volume">
+          <span>Volume</span>
+          <input id="volume" type="range" min="0" max="2" step="0.01" value="1" />
+          <output id="volumeValue">100%</output>
+        </label>
+
+        <label class="control" for="effectMix">
+          <span>Filter Strength</span>
+          <input id="effectMix" type="range" min="0" max="1" step="0.01" value="1" />
+          <output id="effectMixValue">100%</output>
+        </label>
+
+        <label class="control" for="speed">
+          <span>Playback Speed</span>
+          <input id="speed" type="range" min="0.5" max="2" step="0.05" value="1" />
+          <output id="speedValue">1.00x</output>
+        </label>
+
+        <label class="control" for="pitch">
+          <span>Pitch Shift</span>
+          <input id="pitch" type="range" min="-12" max="12" step="1" value="0" />
+        <output id="pitchValue">0 st</output>
+      </label>
+
+        <div class="actions single-action section-reset-actions">
+          <button id="resetPlaybackShaping" type="button">Reset Playback Shaping To Default</button>
+        </div>
+        </div>
+      </details>
+
+      <!-- Effects Section -->
+      <details id="effectsSection" class="control-section accordion-section" data-tab="fx">
+        <summary>Audio Effects</summary>
+        <div class="section-body">
+
+        <label class="control" for="reverb">
+          <span>
+            <input type="checkbox" id="reverb-enable" />
+            Reverb Mix
+          </span>
+          <input id="reverb" type="range" min="0" max="1" step="0.01" value="0" />
+          <output id="reverbValue">0%</output>
+        </label>
+
+        <label class="control" for="reverbType">
+          <span>Reverb Type</span>
+          <select id="reverbType">
+            <option value="room">Room</option>
+            <option value="hall" selected>Hall</option>
+            <option value="plate">Plate</option>
+            <option value="spring">Spring</option>
+            <option value="cathedral">Cathedral</option>
+          </select>
+        </label>
+
+        <label class="control" for="reverbSize">
+          <span>Reverb Size</span>
+          <input id="reverbSize" type="range" min="0.5" max="8" step="0.1" value="4.0" />
+          <output id="reverbSizeValue">4.0 s</output>
+        </label>
+
+        <label class="control" for="reverbTone">
+          <span>Reverb Tone</span>
+          <input id="reverbTone" type="range" min="0" max="1" step="0.01" value="0.6" />
+          <output id="reverbToneValue">60%</output>
+        </label>
+
+        <label class="control" for="chorusMix">
+          <span>
+            <input type="checkbox" id="chorus-enable" />
+            Chorus Mix
+          </span>
+          <input id="chorusMix" type="range" min="0" max="1" step="0.01" value="0" />
+          <output id="chorusMixValue">0%</output>
+        </label>
+
+        <label class="control" for="chorusRate">
+          <span>Chorus Rate</span>
+          <input id="chorusRate" type="range" min="0.1" max="5" step="0.1" value="1.2" />
+          <output id="chorusRateValue">1.2 Hz</output>
+        </label>
+
+        <label class="control" for="chorusType">
+          <span>Chorus Type</span>
+          <select id="chorusType">
+            <option value="classic" selected>Classic</option>
+            <option value="ensemble">Ensemble</option>
+            <option value="vibrato">Vibrato</option>
+            <option value="dimension">Dimension</option>
+          </select>
+        </label>
+
+        <label class="control" for="chorusDepth">
+          <span>Chorus Depth</span>
+          <input id="chorusDepth" type="range" min="0" max="0.03" step="0.001" value="0.008" />
+          <output id="chorusDepthValue">8 ms</output>
+        </label>
+
+        <label class="control" for="chorusWidth">
+          <span>Chorus Width</span>
+          <input id="chorusWidth" type="range" min="0" max="1" step="0.01" value="0.5" />
+          <output id="chorusWidthValue">50%</output>
+        </label>
+
+        <label class="control" for="delayMix">
+          <span>
+            <input type="checkbox" id="delay-enable" />
+            Delay Mix
+          </span>
+          <input id="delayMix" type="range" min="0" max="1" step="0.01" value="0" />
+          <output id="delayMixValue">0%</output>
+        </label>
+
+        <label class="control" for="delayType">
+          <span>Delay Type</span>
+          <select id="delayType">
+            <option value="digital" selected>Digital</option>
+            <option value="tape">Tape</option>
+            <option value="slap">Slapback</option>
+          </select>
+        </label>
+
+        <label class="control" for="delayTime">
+          <span>Delay Time</span>
+          <input id="delayTime" type="range" min="0.03" max="0.8" step="0.01" value="0.22" />
+          <output id="delayTimeValue">220 ms</output>
+        </label>
+
+        <label class="control" for="delayFeedback">
+          <span>Delay Feedback</span>
+          <input id="delayFeedback" type="range" min="0" max="0.9" step="0.01" value="0.35" />
+          <output id="delayFeedbackValue">35%</output>
+        </label>
+
+        <label class="control" for="distortion">
+          <span>
+            <input type="checkbox" id="distortion-enable" />
+            Distortion
+          </span>
+          <input id="distortion" type="range" min="0" max="100" step="1" value="0" />
+          <output id="distortionValue">0%</output>
+        </label>
+
+        <div class="actions single-action section-reset-actions">
+          <button id="resetAudioEffects" type="button">Reset Audio Effects To Default</button>
+        </div>
+
+        <p class="hint-text">Build your sound with reverb, chorus, delay, and distortion layers.</p>
+        </div>
+      </details>
+
+      <!-- Filters & Presets Section -->
+      <details id="presetsSection" class="control-section accordion-section" data-tab="fx">
+        <summary>Filters & Presets</summary>
+        <div class="section-body">
+        <div class="presets">
+          <button id="presetClear" type="button">Clear All</button>
+          <button id="presetOldRadio" type="button">Old Radio</button>
+          <button id="presetLoFi" type="button">Lo-Fi Vinyl</button>
+          <button id="presetDistorted" type="button">Heavy Distortion</button>
+          <button id="presetCatWah" type="button">Cat Wah</button>
+          <button id="presetAlien" type="button">Alien Voice</button>
+          <button id="presetOuterSpace" type="button">Outer Space</button>
+          <button id="presetDeepReverb" type="button">Cathedral</button>
+          <button id="presetPhoneCall" type="button">Phone Call</button>
+        </div>
+        </div>
+      </details>
+
+      <details id="voiceIsolationSection" class="control-section accordion-section voice-isolation-section" hidden style="display: none !important;" data-removed="voice-isolation-2026-08-05">
+        <summary>AI Voice Isolation</summary>
+        <div class="section-body">
+        <p class="hint-text"><strong>Live only:</strong> Processes captured browser audio in real time. It does not affect loaded recordings.</p>
+        <p class="hint-text"><strong>Tip:</strong> For best results, set your track to <strong>Repeat One (loop)</strong> in YouTube Music before starting isolation. The extension tries to enable Repeat One for you automatically, but turning it on yourself guarantees the track loops cleanly at its true end.</p>
+
+        <div class="actions two-up">
+          <button id="startVoiceIsolation" type="button">Start Isolation</button>
+          <button id="stopVoiceIsolation" type="button" disabled>Stop Isolation</button>
+        </div>
+        
+        <label class="control" for="enableVoiceIsolation">
+          <span><strong>Voice Isolation On/Off</strong></span>
+          <input id="enableVoiceIsolation" type="checkbox" />
+        </label>
+        
+        <p id="voiceIsolationStatus" class="status">Voice Isolation: off</p>
+        
+        <label class="control" for="voiceIsolationStrength">
+          <span>Isolation Strength (wet/dry mix)</span>
+          <input id="voiceIsolationStrength" type="range" min="0" max="1" step="0.05" value="1" />
+          <output id="voiceIsolationStrengthValue">100%</output>
+        </label>
+
+        <label class="control" for="voiceIsolationMode">
+          <span>Live Isolation Mode</span>
+          <select id="voiceIsolationMode">
+            <option value="vocals" selected>Voice Only (remove background)</option>
+            <option value="instrumental">Background/Instrumental Only (remove voice)</option>
+          </select>
+        </label>
+        
+        <details id="voiceIsolationAdvancedSection" class="nested-accordion">
+          <summary>Advanced Voice Isolation Tools</summary>
+          <div class="section-body">
+            <p class="hint-text">Model note: open console (F12) to confirm active model and fallback mode.</p>
+
+            <div id="instrumentalPrepCard" class="instrumental-prep-card" hidden data-phase="idle">
+              <p id="instrumentalPrepHeadline" class="prep-headline"></p>
+              <p id="instrumentalPrepDetail" class="prep-detail"></p>
+              <div id="instrumentalPrepProgress" class="prep-progress" hidden>
+                <div id="instrumentalPrepProgressFill" class="prep-progress-fill"></div>
+                <span id="instrumentalPrepProgressText" class="prep-progress-text"></span>
+              </div>
+              <div class="prep-actions">
+                <button id="downloadPreparedInstrumentalBtn" type="button" class="prep-download-btn" hidden>⬇ Download Instrumental</button>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        </div>
+      </details>
+
+      <details id="stemSection" class="control-section accordion-section stem-section" data-tab="ai">
+        <summary>AI Source Stems</summary>
+        <div class="section-body">
+        <p class="hint-text">Production-quality stem separation powered by Demucs, running locally through the companion app.</p>
+        <p id="companionStatus" class="status">Pro Engine: checking...</p>
+
+        <div class="actions single-action companion-restart-row">
+          <button id="restartCompanion" type="button" title="Restart the Pro Engine — fixes profile drift or a stuck engine without opening Terminal.">↻ Restart Engine</button>
+        </div>
+
+        <!-- Shown only when companion server is not detected -->
+        <div id="companionSetupHint" class="companion-setup-hint" data-preview>
+          <div class="pro-engine-header">
+            <span class="pro-engine-icon">✦</span>
+            <span class="pro-engine-title">Pro Engine</span>
+            <span class="pro-badge">LOCAL AI</span>
+          </div>
+          <p class="pro-engine-tagline">Studio-grade stem separation, entirely on your Mac — no cloud, no subscription, no queue.</p>
+          <ul class="pro-feature-list">
+            <li>Demucs 4 — the research-grade model used in professional production</li>
+            <li>Clean 4-stem output: vocals, drums, bass &amp; other</li>
+            <li>Audio stays on your machine — 100% private</li>
+            <li>Apple Silicon accelerated · works offline · any site</li>
+          </ul>
+          <div class="pro-setup-divider"><span>One-time setup · ~2 minutes</span></div>
+          <ol class="pro-setup-steps">
+            <li>Open Terminal and <code>cd</code> to the project root folder</li>
+            <li>Run: <code>bash companion_app/install-macos-service.sh</code></li>
+            <li>If macOS blocks execution, run: <code>chmod +x "Install Companion.command"</code></li>
+            <li>Done — launches automatically on every login</li>
+          </ol>
+          <div class="pro-setup-actions">
+            <button id="copyCompanionSetup" type="button">Copy Quick-Start Command</button>
+          </div>
+        </div>
+
+        <div class="actions two-up">
+          <button id="checkCompanion" type="button">Check Pro Engine</button>
+          <button id="generateStems" type="button" disabled>Generate Source Stems</button>
+        </div>
+        <div class="actions single-action">
+          <button id="cancelStemGeneration" type="button" hidden>Cancel Stem Generation</button>
+        </div>
+
+        <div id="stemProgress" class="stem-progress" hidden>
+          <div id="stemProgressFill" class="stem-progress-fill"></div>
+          <span id="stemProgressText" class="stem-progress-text">Preparing...</span>
+        </div>
+        <p id="stemStatus" class="status">Stems: not generated</p>
+        <p id="sourceStemStatus" class="status">Source Stems: none</p>
+
+        <details id="stemWaveformContainer" class="waveform-container nested-accordion" style="display: none;">
+          <summary>Wavetable Visualizer (Linked Playback)</summary>
+          <div class="section-body">
+            <div class="waveform-info">
+              <span>Duration: <output id="stemTotalDuration">0.0</output>s</span>
+              <span>Current: <output id="stemCurrentPlaybackTime">0.0</output>s</span>
+              <span id="stemTrimmedDuration">Trimmed: 0.0s</span>
+            </div>
+
+            <div class="waveform-wrapper">
+              <canvas id="stemWaveformCanvas" class="waveform-canvas"></canvas>
+              <input id="stemScrubberInput" type="range" min="0" max="100" step="0.1" value="0" class="scrubber-slider" />
+            </div>
+
+            <div class="actions" style="margin-top: 8px;">
+              <button id="stemPlayLoadedAudio" type="button" disabled>&#9654; Play</button>
+              <button id="stemPauseLoadedAudio" type="button" disabled>&#9646;&#9646; Pause</button>
+              <button id="stemStopLoadedAudio" type="button" disabled>&#9632; Stop</button>
+            </div>
+            <p class="hint-text">Uses the same playback engine and trim range as Recorded Playback.</p>
+          </div>
+        </details>
+
+        <label class="control" for="useStemMixPlayback">
+          <span><strong>Use Stem Mix For Recorded Playback</strong></span>
+          <input id="useStemMixPlayback" type="checkbox" />
+        </label>
+
+        <label class="control" for="useLiveStemMixing">
+          <span>Enable Live Stem Mixing (Browser Audio)</span>
+          <input id="useLiveStemMixing" type="checkbox" />
+        </label>
+
+        <div id="sourceStemControls" class="source-stem-grid"></div>
+
+        <details id="stemExportSection" class="stem-download-section nested-accordion">
+          <summary>Stem Exports & Quick Presets</summary>
+          <div class="section-body">
+            <div class="actions stem-download-actions">
+              <button id="downloadStemMix" type="button" disabled>Download Current Stem Mix</button>
+              <button id="downloadAllStems" type="button" disabled>Download All Individual Stems</button>
+              <button id="presetExcludeVocals" type="button" disabled>Everything But Vocals</button>
+              <button id="presetExcludeDrums" type="button" disabled>Everything But Drums</button>
+              <button id="presetExcludeBass" type="button" disabled>Everything But Bass</button>
+              <button id="presetExcludeDrumsBass" type="button" disabled>Everything But Drums + Bass</button>
+              <button id="presetVocalsOnly" type="button" disabled>Vocals Only</button>
+              <button id="presetEnableAllStems" type="button" disabled>Enable All Stems</button>
+            </div>
+            <p class="quirk-note">Popup may close when downloads begin. Reopen to continue with restored stems and mix state.</p>
+          </div>
+        </details>
+
+        <details id="stemCleanupSection" class="stem-cleanup-section nested-accordion">
+          <summary>Stem Cleanup Lab</summary>
+          <div class="section-body">
+            <p class="hint-text">Target one stem and suppress unwanted artifacts before playback or export.</p>
+
+            <label class="control" for="cleanupStemSelect">
+              <span>Target Stem</span>
+              <select id="cleanupStemSelect" disabled>
+                <option value="">No stems loaded</option>
+              </select>
+            </label>
+
+            <label class="control" for="autoVocalCleanupEnabled">
+              <span>Auto-Apply Vocal Cleanup On Stem Generation</span>
+              <input id="autoVocalCleanupEnabled" type="checkbox" />
+            </label>
+
+            <label class="control" for="autoVocalCleanupStrength">
+              <span>Auto Cleanup Strength</span>
+              <input id="autoVocalCleanupStrength" type="range" min="0" max="1" step="0.01" value="0.55" />
+              <output id="autoVocalCleanupStrengthValue">55%</output>
+            </label>
+
+            <label class="control" for="cleanupEnabled">
+              <span>Enable Cleanup For Target Stem</span>
+              <input id="cleanupEnabled" type="checkbox" disabled />
+            </label>
+
+            <label class="control" for="cleanupHighpass">
+              <span>High-pass (remove rumble/low bleed)</span>
+              <input id="cleanupHighpass" type="range" min="20" max="2000" step="5" value="80" disabled />
+              <output id="cleanupHighpassValue">80 Hz</output>
+            </label>
+
+            <label class="control" for="cleanupLowpass">
+              <span>Low-pass (remove hiss/harsh highs)</span>
+              <input id="cleanupLowpass" type="range" min="1000" max="20000" step="50" value="18000" disabled />
+              <output id="cleanupLowpassValue">18000 Hz</output>
+            </label>
+
+            <label class="control" for="cleanupGate">
+              <span>Noise Gate (mute quiet leftovers)</span>
+              <input id="cleanupGate" type="range" min="0" max="0.08" step="0.001" value="0" disabled />
+              <output id="cleanupGateValue">0.000</output>
+            </label>
+
+            <label class="control" for="cleanupTransientReduction">
+              <span>Transient Reduction (soften percussive hits)</span>
+              <input id="cleanupTransientReduction" type="range" min="0" max="1" step="0.01" value="0" disabled />
+              <output id="cleanupTransientReductionValue">0%</output>
+            </label>
+
+            <div class="actions stem-download-actions">
+              <button id="applyAutoVocalCleanup" type="button" disabled>Auto Clean Vocals (Recommended)</button>
+              <button id="applyAutoVocalCleanupStrong" type="button" disabled>Auto Clean Vocals (Strong)</button>
+              <button id="applyVocalCleanupPreset" type="button" disabled>Vocal De-bleed Preset</button>
+              <button id="resetCleanupForStem" type="button" disabled>Reset Target Cleanup</button>
+            </div>
+          </div>
+        </details>
+
+        <details id="stemPlaybackBandsSection" class="nested-accordion">
+          <summary>Playback Band Controls</summary>
+          <div class="section-body">
+            <p class="hint-text">Optional playback shaping controls for the current stem mix output.</p>
+
+            <div class="stem-grid">
+              <label class="control" for="stemLowGain">
+                <span>Low Band</span>
+                <input id="stemLowGain" type="range" min="0" max="1.5" step="0.01" value="1" />
+                <output id="stemLowGainValue">100%</output>
+              </label>
+              <label class="stem-mute">
+                <input id="stemLowMute" type="checkbox" /> Mute
+              </label>
+
+              <label class="control" for="stemMidGain">
+                <span>Mid Band</span>
+                <input id="stemMidGain" type="range" min="0" max="1.5" step="0.01" value="1" />
+                <output id="stemMidGainValue">100%</output>
+              </label>
+              <label class="stem-mute">
+                <input id="stemMidMute" type="checkbox" /> Mute
+              </label>
+
+              <label class="control" for="stemHighGain">
+                <span>High Band</span>
+                <input id="stemHighGain" type="range" min="0" max="1.5" step="0.01" value="1" />
+                <output id="stemHighGainValue">100%</output>
+              </label>
+              <label class="stem-mute">
+                <input id="stemHighMute" type="checkbox" /> Mute
+              </label>
+            </div>
+          </div>
+        </details>
+        </div>
+
+        <div class="actions single-action">
+          <button id="downloadProcessedWav" type="button" disabled>Download Processed WAV</button>
+        </div>
+        </div>
+      </details>
+
+          </main>
+        </div>
+      </div>
+
+    <script src="popup.js"></script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,222 @@
+AUDIO MIXER EXTENSION UI BUILD GUIDE
+
+Version: 1.0
+Date: 2026-04-23
+Purpose: Prevent design drift, memory loss, and assumption-based UI changes.
+
+==================================================
+1) SOURCE-TRUTH RULES (NON-NEGOTIABLE)
+==================================================
+1. Never claim a study answers anything unless it has been directly read.
+2. Never claim visual success without runtime validation.
+3. Never ship a visual change without checking CSS interaction side effects.
+4. If uncertain, block conclusions and verify first.
+
+==================================================
+2) TARGET AESTHETIC (LOCKED)
+==================================================
+Primary visual goal:
+- macOS-like material hierarchy with restrained modern Aero influence.
+
+Canonical material model:
+- Hybrid system
+  - Shell: sidebar-like translucency
+  - Internal cards/controls: popover-like opacity for legibility
+
+Visual intent:
+- Lush depth, clear hierarchy, premium typography, controlled accent usage.
+- No muddy frost, no flat white wash, no novelty-heavy styling.
+
+==================================================
+3) VERIFIED IMPLEMENTATION TOKENS (LOCKED)
+==================================================
+Core geometry:
+- Main shell radius: 32px
+- Internal card radius: 12px to 16px
+
+Core material formulas:
+- Shell baseline: blur(20px) saturate(180%) brightness(1.02)
+- Max simultaneous blur layers: 2 (shell + one active card)
+
+Color system:
+- Accent: oklch(55% 0.26 264) with hex fallback #9B6FE8
+- Accent usage cap: <= 15% visible pixels
+- Neutral ramp baseline:
+  - Surface light: oklch(97% 0.01 240)
+  - Surface dark: oklch(18% 0.02 240)
+  - Stroke: oklch(88% 0.01 300)
+  - Text strong: oklch(12% 0.02 240)
+
+Typography:
+- Font stack: system-ui, -apple-system, sans-serif
+- Tokens:
+  - Title: 20pt / 600 / tight tracking
+  - Headline: 15pt / 600 / normal tracking
+  - Body: 13pt / 400 / normal tracking
+  - Caption: 11pt / 400 / loose tracking
+
+Motion:
+- Hover: 150ms ease
+- Press: 100ms ease-out
+- Expand/collapse: 300ms ease-in-out
+
+Accessibility:
+- prefers-reduced-transparency branch required
+- Reduced branch target: 95% solid surfaces
+- Text contrast target: >= 4.5:1
+
+==================================================
+4) BACKGROUND STRATEGY (PRIMARY DECISION)
+==================================================
+Primary background approach:
+- Static vibrant mesh first (Gamma Purple + Clear Gel family)
+
+Capture strategy:
+- captureVisibleTab is NOT primary aesthetic.
+- If retained at all, it is optional enhancement only, never visual dependency.
+
+Reason:
+- Live capture in popup context is brittle, timing-sensitive, and perceptually unstable.
+
+==================================================
+5) KNOWN UNKNOWNS (MUST STAY ACTIVE)
+==================================================
+These are mandatory risk checks during all UI work:
+1. Existing CSS interactions may override or flatten full material layering.
+2. Chrome popup compositor behavior may alter blur perception.
+3. JS state classes/data attributes may mutate visual states unexpectedly.
+4. Style-balance target may drift (too native-minimal or too Aero-heavy).
+5. Small-size font rendering may look off even with correct token values.
+
+If any unknown is unresolved, label output as provisional.
+
+==================================================
+6) SIDE-EFFECT AUDIT PROTOCOL (REQUIRED EACH PASS)
+==================================================
+Pre-edit audit:
+1. Identify all backdrop-filter, filter, opacity, pseudo-element, and blend rules.
+2. Identify duplicate or late override blocks.
+3. Identify JS style/dataset/class mutations affecting visuals.
+
+Post-edit audit:
+1. Confirm shell/card layering still follows 2-layer blur budget.
+2. Confirm no late override re-whitens surfaces.
+3. Confirm accent remains <= 15% area.
+4. Confirm reduced-transparency branch still works.
+
+Runtime validation:
+1. Open popup on normal page.
+2. Open popup on restricted/internal page.
+3. Check for white wash, seam halos, muddy blur, and text contrast regressions.
+
+==================================================
+7) BUILD ORDER (DO NOT REORDER)
+==================================================
+Phase 1: Foundation
+- Build static mesh background and shell material first.
+- Lock typography tokens and spacing hierarchy.
+
+Phase 2: Structural depth
+- Apply card/popover materials and edge treatment.
+- Add mask-based seam control where needed.
+
+Phase 3: Controls
+- Build button and input states with restrained tactility.
+- Add active/focus/disabled states with accessibility-safe contrast.
+
+Phase 4: Dynamic elements
+- Progress bars, status indicators, waveform surfaces.
+- Verify no glow/noise overwhelms hierarchy.
+
+Phase 5: Accessibility + perf
+- Validate reduced motion/transparency branches.
+- Validate smoothness and no obvious jank on popup open.
+
+==================================================
+8) COMPONENT RECIPES (BASELINE)
+==================================================
+Section card baseline:
+- background: rgba(255,255,255,0.12)
+- backdrop-filter: blur(20px) saturate(180%)
+- border: 1px solid rgba(255,255,255,0.2)
+- box-shadow: 0 8px 32px rgba(0,0,0,0.1)
+
+Primary action button baseline:
+- Layered gradient construction (base + refraction + gloss)
+- Hover: brightness lift + deeper shadow
+- Active: slight scale down to 0.97 for 100ms
+- Disabled: grayscale + opacity reduction (not opacity alone)
+
+Status LED baseline:
+- 8px circle with accent color
+- 1.8s pulse cycle
+- soft blur halo behind indicator
+
+==================================================
+9) PASS/FAIL RUBRIC (GO/NO-GO)
+==================================================
+PASS requires ALL:
+1. At least 3 visible depth levels (bg, card, control).
+2. Frost reads as lush, not chalky.
+3. Buttons feel tactile, not flat.
+4. Typography feels native and balanced.
+5. Motion feels calm and intentional.
+6. No obvious white flash or heavy jank.
+
+INSTANT FAIL if ANY:
+1. Flat white or gray-wash appearance.
+2. Muddy, opaque, or dead blur.
+3. Generic/basic typography feel.
+4. Over-accented purple dominance.
+5. Visual seams/halos around rounded blur cards.
+
+==================================================
+10) CHANGE CONTROL FOR UI PASSES
+==================================================
+Every pass must include:
+1. What changed.
+2. Why it changed (mapped to this guide).
+3. What risks were checked.
+4. What still remains unknown.
+5. Whether output is provisional or validated.
+
+One-change discipline:
+- Make small, reversible visual deltas.
+- Validate before stacking additional changes.
+
+==================================================
+11) EXECUTION CHECKLIST (USE EACH SESSION)
+==================================================
+Before coding:
+- Confirm target style balance for this pass.
+- Confirm which component family is in scope.
+
+During coding:
+- Keep blur layers within budget.
+- Keep accent coverage under cap.
+- Watch for override collisions.
+
+After coding:
+- Run side-effect audit.
+- Run runtime visual validation.
+- Report pass/fail against rubric.
+
+==================================================
+12) CURRENT PROJECT-SPECIFIC ALERTS
+==================================================
+Alert A:
+- Existing popup CSS contains late override blocks that can flatten earlier material styling.
+
+Alert B:
+- Popup JS still applies captured-tab background image on startup; this can conflict with static-first strategy.
+
+Alert C:
+- Multiple legacy visual styles coexist; consolidation is required to avoid contradictory layers.
+
+==================================================
+13) FINAL OPERATING STATEMENT
+==================================================
+This guide is the source of implementation discipline.
+If a design decision conflicts with this guide, pause and resolve the conflict before changing UI code.
+No assumption-based visual edits.
+No unverified claims.

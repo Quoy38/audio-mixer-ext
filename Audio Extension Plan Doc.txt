@@ -1,0 +1,114 @@
+Web extension that acts as an on site audio splitter and mixer
+
+
+Able to remove background music from YouTube videos, shorts, Tik toks, ect.
+
+Able to split audio files into frequency categories: Bass, Drums/ percussion, vocal, melody (sub categories by instrument like piano, guitar, brass, woodwind, ect. If possible)
+
+Able to record browser audio
+
+Able to add various effects to the audio the user is listening to via browser like bass boosted, slowed, sped up, and stacked with things like reverb, chorus, vinyl filter, ect. 
+
+Possibly able to replace background music with the users own choice in music via connecting to platforms like Spotify, Apple Music, etc.
+
+
+What Currently Exists (The Pieces)
+	•	Stem Separation (Removing BGM, isolating bass/vocals/drums): This technology exists and is widely used, but mostly as standalone web applications or desktop software (e.g., Moises, LALAL.AI, Fadr, or open-source tools like Spleeter and Demucs). You usually have to upload an audio file or paste a YouTube link, wait for the AI to process it, and then download the stems.  
+	•	Browser Audio Effects (EQ, Bass Boost, Reverb): There are several Chrome extensions that intercept browser audio to add effects. Extensions like Ears: Bass Boost, EQ Any Audio, or Audio Channel use the browser's Web Audio API to manipulate HTML5 audio/video tags in real-time.  
+	•	Audio Recording: Extensions like Chrome Audio Capture or Sample easily allow users to record the output of their current browser tab.  
+	•	Speed Adjustment: Extensions like Global Speed or Video Speed Controller handle slowing down or speeding up media seamlessly.  
+2. The Technical Reality (Why it isn't an extension yet)
+The main reason your idea doesn't exist as a unified, real-time web extension is the computational power required for live AI stem separation.
+	•	The Bottleneck: Adding a vinyl filter or a bass boost requires very little processing power; the browser's native Web Audio API handles it easily. However, separating an audio track into vocals, drums, bass, and melody requires running the audio through a complex neural network.  
+	•	Real-time vs. Post-processing: Doing this in real-time (as a TikTok or YouTube video is playing) without causing massive latency, audio stuttering, or melting the user's CPU/RAM is incredibly difficult inside a browser extension.
+	•	Browser Limitations: Extensions are sandboxed and historically haven't had the raw access to GPU power needed for heavy AI inference, though modern technologies like WebGPU and WebAssembly (WASM) are starting to change this.
+
+Part 1: How to Build It (VS Code + AI Workflow)
+Since you are using a Mac and VS Code, you have the perfect setup. The key is using the right AI tools and breaking the project into manageable chunks.
+1. Set up your AI Coding Environment Instead of just using standard ChatGPT in a browser window, you need an AI that can read your entire codebase and write files directly.
+	•	Top VS Code Extensions (as of 2026): Install Cline (an incredible open-source AI agent that plans out the architecture before writing the code) or GitHub Copilot.
+	•	Alternative: You might also consider downloading Cursor or Windsurf. These are forks of VS Code with AI deeply built into the editor, allowing you to highlight code and press Cmd+K to tell the AI what to change.
+2. The Tech Stack You Will Need You will need to ask your AI assistant to help you build three distinct parts:
+	•	The Frontend (The Extension UI): Built with HTML, CSS, and plain JavaScript (or React). This is the popup you see when you click the extension icon.
+	•	The Audio Engine (Local): Ask your AI to utilize the Web Audio API. This is built into Chrome/Safari and will handle the "live" effects entirely on the user's Mac for free. This handles the bass boost, reverb, speed changes, and EQ.
+	•	The AI Backend (Cloud): Because a browser extension cannot run heavy neural networks to separate stems in real-time, your extension needs to send the YouTube/TikTok audio to a cloud server.
+3. The AI Prompting Strategy Do not ask the AI to "build the whole extension." It will fail. Build it in this exact order:
+	•	Step 1: "Create a manifest V3 Chrome extension boilerplate with a popup UI."
+	•	Step 2: "Write a background script that can capture the audio of the current active browser tab."
+	•	Step 3: "Using the Web Audio API, add a slider to the popup that adds a low-pass filter (bass boost) to the captured audio."
+	•	Step 4: "Create a Python backend script using FastAPI and the open-source 'Demucs' model to accept an audio file, separate the vocals and instruments, and return the stems."
+Week 1: The Foundation & Effects. With an AI coding tool like Cursor or GitHub Copilot, you can build the basic Chrome Extension framework in a day. The rest of the week will be spent using the Web Audio API to capture browser audio and build the UI sliders for your local effects (bass boost, EQ, speed, reverb).
+Weeks 2-3: The AI Backend (The Hard Part). This is where you will spend the most time. You need to set up a Python backend using something like FastAPI. You will have to figure out how to send the YouTube/TikTok audio buffer from the extension to your server, run it through an open-source model like Demucs or Spleeter, and send the separated audio stems back to the extension perfectly synced up.
+Week 4: Polish & Bug Fixing. Audio programming is notoriously finicky. You will spend this week fixing bugs, like audio drifting out of sync, the extension crashing on certain websites, or the UI looking weird.
+Week 5: Deployment. Submitting to the Chrome Web Store takes a few days for Google to review and approve your extension.
+The Reality Check
+The biggest hurdle you will face in this timeline is the user experience regarding loading times. When a user clicks "Isolate Vocals" on a YouTube video, your extension has to send that audio to your server, process it, and send it back. Depending on the server GPU you rent, this could take anywhere from 10 to 30 seconds for a 3-minute song. You will need to build a really good "Loading..." UI so users don't think the extension is broken.
+Project Master Blueprint: In-Browser Audio Mixer & Stem Splitter
+1. The Tech Stack & Architecture
+You are building three separate but connected pieces of software.
+A. The Frontend: Chrome Extension (Manifest V3)
+	•	Languages: HTML, CSS, JavaScript (or a lightweight framework like React/Vue if you prefer, but Vanilla JS is easier for a V1).
+	•	Core API: chrome.tabCapture API (to grab the audio from the current tab).
+	•	Purpose: The UI the user interacts with (sliders, buttons) and the script that injects your custom audio player over the webpage.
+B. The Local Audio Engine
+	•	Core Tech: Web Audio API (Native to the browser).
+	•	Purpose: Handles all the instant effects for free on the user's Mac.
+	•	Capabilities: BiquadFilterNode for Bass Boost/EQ, ConvolverNode for Reverb, playbackRate for speed adjustment, and MediaRecorder for capturing the final output.
+C. The AI Backend (The Heavy Lifter)
+	•	Language: Python.
+	•	Framework: FastAPI (Lightning-fast API framework to handle the frontend requests).
+	•	AI Model: Demucs (Meta's open-source model) or Spleeter (Deezer's model). Demucs has better quality; Spleeter is faster.
+	•	Hosting: Run locally on your Mac for testing. Later, deploy to Modal, RunPod, or AWS for production GPUs.
+
+2. Step-by-Step Implementation Guide (What to do today)
+Phase 1: Environment Setup (Hours 1-2)
+	1	Open VS Code on your Mac.
+	2	Install your AI coding extension (Cline, Cursor, GitHub Copilot, etc.).
+	3	Install Node.js (for frontend package management if needed) and Python (for the backend).
+Phase 2: The Extension Skeleton (Hours 2-4)
+	•	Prompt your AI: "Create a basic Manifest V3 Chrome Extension. It needs a popup with a simple UI (a few sliders), a background script, and a content script. Add the 'tabCapture' and 'activeTab' permissions."
+	•	Goal: Get the extension to load in Chrome (chrome://extensions > Developer Mode > Load Unpacked) and successfully capture the audio of a playing YouTube video.
+Phase 3: The Local Effects - Web Audio API (Days 2-3)
+	•	Prompt your AI: "Using the audio stream captured by chrome.tabCapture, route it through the Web Audio API. Connect a BiquadFilterNode to act as a low-shelf bass boost, and link it to a slider in my popup UI."
+	•	Goal: Prove you can manipulate the live audio. Add EQ, speed, and reverb one by one.
+Phase 4: The AI Backend (Week 2)
+	•	Prompt your AI: "Write a Python FastAPI server that accepts an audio file upload. Write a function that passes this file to the local Demucs model to separate the vocals, bass, drums, and melody, and returns the 4 separated audio tracks."
+	•	Goal: Get a local server running where you can manually send an MP3 and get stems back.
+Phase 5: The Bridge (Week 3)
+	•	Goal: Connect the Extension to the Python Server. The extension sends the audio; the server processes it and sends the stems back; the Web Audio API plays the 4 stems simultaneously with volume sliders for each.
+
+3. Critical Unstated Concerns (The "Gotchas")
+Before you write a single line of code, you need to decide how to handle these massive technical hurdles. Ask your AI assistant to help you strategize around these:
+A. How do you actually get the audio to your server?
+	•	The Problem: You can't easily send a "live continuous stream" to an AI model for stem separation. The model needs a complete file to analyze.
+	•	Question to solve: Do you use a third-party API (like yt-dlp in your backend) to download the YouTube audio directly via the URL instead of recording it via the browser? (Warning: This violates YouTube's Terms of Service, though many apps do it). Or do you have the extension record the first 30 seconds of the tab, send that chunk, and process it?
+B. The Synchronization Nightmare
+	•	The Problem: If a user is watching a YouTube video, clicks "Isolate Vocals", and you send the audio to your server, it might take 15 seconds to process. When the stems come back, the YouTube video is now 15 seconds ahead.
+	•	Question to solve: How do you sync the returning audio stems with the video player? Do you pause the video while processing? Do you mute the original YouTube player and mathematically sync your custom Web Audio API stems to the YouTube video's exact timestamp?
+C. CORS (Cross-Origin Resource Sharing)
+	•	The Problem: Browsers block web pages from requesting data from different domains for security reasons. Your extension (running on youtube.com) trying to talk to your Python backend (localhost:8000 or your-api.com) will get blocked immediately.
+	•	Question to solve: You must configure your FastAPI backend to explicitly allow CORS requests from your Chrome Extension's unique ID.
+D. Memory Leaks
+	•	The Problem: Holding 4 high-quality, uncompressed audio stems (vocals, bass, drums, melody) in the browser's RAM via the Web Audio API can crash the user's tab if the song is 10 minutes long.
+	•	Question to solve: How will you manage the audio buffer size?
+1. The Folder Structure
+Open VS Code, create a new folder for your project (e.g., audio-mixer-ext), and create this exact file tree. Keep it modular from day one so you don't get lost later.
+audio-mixer-ext/
+│
+├── manifest.json          # The master configuration file
+│
+├── assets/                # For your extension icons
+│   ├── icon-16.png        
+│   ├── icon-48.png
+│   └── icon-128.png       # (You can just use placeholder PNGs for now)
+│
+├── popup/                 # The UI that appears when you click the extension
+│   ├── popup.html         # The sliders and buttons
+│   ├── popup.css          # Styling for the UI
+│   └── popup.js           # Frontend logic (sending messages to background)
+│
+├── background/            # The invisible brain of the extension
+│   └── background.js      # Service worker handling the tabCapture API
+│
+└── content/               # Interacts with the actual webpage (YouTube/TikTok)
+    └── content.js         # Injects the audio player or mutes the original video

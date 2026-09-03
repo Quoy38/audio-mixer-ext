@@ -1,0 +1,81 @@
+#!/bin/bash
+# postinstall — runs as root inside the installer after the payload is laid down.
+# Reproduces the launchd setup that install-macos-service.sh performs, but pointed
+# at the pkg's install location instead of the repo. Best-effort: it always exits 0
+# so the install succeeds even if the immediate launch can't happen (a LaunchAgent
+# in /Library/LaunchAgents still loads at the next login regardless).
+set -u
+
+INSTALL_ROOT="/Library/Application Support/AudioMixerExt"
+COMPANION_DIR="$INSTALL_ROOT/companion"
+PLIST_TEMPLATE="$COMPANION_DIR/com.audiomixerext.companion.plist"
+PLIST_DEST="/Library/LaunchAgents/com.audiomixerext.companion.plist"
+LABEL="com.audiomixerext.companion"
+
+# ── Locate the bundled runtime interpreter (arch-specific dir the pkg shipped) ──
+PYBIN=""
+for arch in arm64 x86_64; do
+  cand="$INSTALL_ROOT/runtime/$arch/python/bin/python3"
+  if [ -x "$cand" ]; then PYBIN="$cand"; break; fi
+done
+if [ -z "$PYBIN" ]; then
+  echo "AudioMixerExt: no bundled runtime interpreter found under $INSTALL_ROOT/runtime" >&2
+  exit 0
+fi
+SERVER="$COMPANION_DIR/server.py"
+
+# ── Inference device: mps when the GPU backend is available, else cpu ──────────
+DEVICE="$("$PYBIN" - <<'PY' 2>/dev/null || echo cpu
+try:
+    import torch
+    print("mps" if torch.backends.mps.is_available() else "cpu")
+except Exception:
+    print("cpu")
+PY
+)"
+case "$DEVICE" in mps|cpu) ;; *) DEVICE="cpu" ;; esac
+
+# ── CA bundle for HTTPS from the standalone runtime (no default CA path) ───────
+CERT="$("$PYBIN" -c 'import certifi; print(certifi.where())' 2>/dev/null || true)"
+[ -f "$CERT" ] || CERT="/etc/ssl/cert.pem"
+
+# ── Resolve the logged-in GUI user so logs land in their home + we can start now ─
+CONSOLE_USER="$(stat -f%Su /dev/console 2>/dev/null || true)"
+CONSOLE_UID=""
+USER_HOME=""
+if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ] && [ "$CONSOLE_USER" != "loginwindow" ]; then
+  CONSOLE_UID="$(id -u "$CONSOLE_USER" 2>/dev/null || true)"
+  USER_HOME="$(dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null | awk '{print $2}')"
+fi
+if [ -n "$USER_HOME" ] && [ -d "$USER_HOME" ]; then
+  LOG_DIR="$USER_HOME/Library/Logs/AudioMixerExt"
+else
+  LOG_DIR="/Library/Logs/AudioMixerExt"
+fi
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+[ -n "$CONSOLE_UID" ] && chown "$CONSOLE_UID" "$LOG_DIR" 2>/dev/null || true
+
+# ── Template the LaunchAgent plist with real paths (same keys as the repo flow) ─
+if ! sed \
+  -e "s|COMPANION_PYTHON_PATH|$PYBIN|g" \
+  -e "s|COMPANION_SERVER_PATH|$SERVER|g" \
+  -e "s|COMPANION_APP_DIR|$COMPANION_DIR|g" \
+  -e "s|COMPANION_DEMUCS_DEVICE|$DEVICE|g" \
+  -e "s|COMPANION_SSL_CERT_FILE|$CERT|g" \
+  -e "s|COMPANION_LOG_OUT|$LOG_DIR/companion.log|g" \
+  -e "s|COMPANION_LOG_ERR|$LOG_DIR/companion-error.log|g" \
+  "$PLIST_TEMPLATE" > "$PLIST_DEST"; then
+  echo "AudioMixerExt: failed to write $PLIST_DEST" >&2
+  exit 0
+fi
+chown root:wheel "$PLIST_DEST" 2>/dev/null || true
+chmod 644 "$PLIST_DEST" 2>/dev/null || true
+
+# ── Start it now in the user's GUI session (also auto-loads at every login) ────
+if [ -n "$CONSOLE_UID" ]; then
+  launchctl bootout "gui/$CONSOLE_UID" "$PLIST_DEST" 2>/dev/null || true
+  launchctl bootstrap "gui/$CONSOLE_UID" "$PLIST_DEST" 2>/dev/null || true
+  launchctl enable "gui/$CONSOLE_UID/$LABEL" 2>/dev/null || true
+fi
+
+exit 0

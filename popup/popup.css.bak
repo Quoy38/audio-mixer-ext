@@ -1,0 +1,1780 @@
+:root {
+  color-scheme: light;
+  --font-ui: system-ui, -apple-system, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  --captured-tab-image: none;
+
+  /* ── Frutiger Aero palette ─────────────────────────────────────────────── */
+  --aero-sky-0:   #e8f6ff;  /* lightest sky */
+  --aero-sky-1:   #c6e8ff;  /* mid sky */
+  --aero-sky-2:   #8dcfff;  /* deep sky */
+  --aero-aqua:    #3fc8e8;  /* signature aqua */
+  --aero-teal:    #1ea8c8;  /* teal accent */
+  --aero-periwinkle: #6e8fff; /* periwinkle accent */
+  --aero-violet:  #8f6eff;  /* violet accent */
+  --aero-mint:    #7de8b4;  /* mint */
+  --aero-white:   #f6faff;
+  --aero-chrome:  rgba(255,255,255,0.92);
+
+  /* ── Text ──────────────────────────────────────────────────────────────── */
+  --text-strong:  #0f172a;
+  --text-soft:    #253149;
+  --text-label:   #1d2940;
+
+  /* ── Legacy tokens (keep for JS refs) ─────────────────────────────────── */
+  --gel-0: #f0f9ff;
+  --gel-1: #ddf1ff;
+  --gel-2: #c0e5ff;
+  --gel-edge: #9ad4f8;
+  --gamma-500: #6e8fff;
+  --gamma-400: #8fa8ff;
+  --gamma-300: #b4c8ff;
+  --aqua-300: #3fc8e8;
+  --mint-300: #7de8b4;
+  --summary-text: #1a4a6a;
+  --motion-fast: 140ms;
+  --motion-med:  300ms;
+
+  /* ── Surfaces ──────────────────────────────────────────────────────────── */
+  --surface-border:    rgba(255,255,255,0.82);
+  --surface-shadow:    0 8px 22px rgba(10,40,80,0.16);
+  --surface-highlight: inset 0 1px 0 rgba(255,255,255,0.96);
+  --surface-shade:     inset 0 -12px 22px rgba(30,90,140,0.10);
+  --surface-card:      linear-gradient(160deg, rgba(255,255,255,0.90), rgba(200,236,255,0.60));
+  --surface-pill:      linear-gradient(170deg, rgba(255,255,255,0.96), rgba(210,240,255,0.68));
+  --accent-glow:       0 0 0 1px rgba(155,111,232,0.42), 0 8px 22px rgba(155,111,232,0.28);
+
+  /* ── Option B: Warm Magenta-Violet accent ─────────────────────────────── */
+  --accent-primary:    #9B6FE8;
+  --accent-primary-oklch: oklch(55% 0.26 264);
+  --accent-purple-glow: rgba(155,111,232,0.45);
+  --accent-muted:      rgba(155,111,232,0.12);
+  --accent-text:       #DEC8FF;
+  --focus-ring:        0 0 0 2px rgba(155,111,232,0.55), 0 0 0 4px rgba(155,111,232,0.25);
+
+  /* ── Clear Gel mesh tokens (research-locked) ─────────────────────────── */
+  --clear-gel: oklch(96% 0.02 200);
+  --water-blue: oklch(88% 0.12 215);
+  --gamma-purple: oklch(55% 0.26 264);
+  --deep-purple: oklch(35% 0.18 275);
+  --clear-gel-hex: #f0f9fa;
+  --water-blue-hex: #bee9f0;
+  --gamma-purple-hex: #9b6fe8;
+  --deep-purple-hex: #5a3a9e;
+
+  /* ── Hybrid Material Blueprint Tokens ─────────────────────────────────── */
+  --shell-radius: 32px;
+  --shell-surface: linear-gradient(180deg, rgba(246, 250, 255, 0.52) 0%, rgba(236, 242, 250, 0.44) 100%);
+  --shell-border: rgba(255, 255, 255, 0.52);
+  --shell-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --shell-filter: blur(20px) saturate(180%) brightness(1.02);
+  --card-surface: linear-gradient(165deg, rgba(255, 255, 255, 0.78), rgba(247, 250, 255, 0.68));
+  --card-border: rgba(255, 255, 255, 0.58);
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88), 0 5px 16px rgba(15, 23, 42, 0.10);
+  --base-bg:
+    radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.30) 0%, transparent 46%),
+    radial-gradient(at 100% 0%, rgba(168, 184, 205, 0.42) 0%, transparent 42%),
+    radial-gradient(at 100% 100%, rgba(148, 166, 186, 0.36) 0%, transparent 54%),
+    linear-gradient(180deg, #a8b4c4 0%, #9ba8ba 54%, #8f9db0 100%);
+
+  /* ── Texture channel ───────────────────────────────────────────────────── */
+  /* bg-clear-gel: suitable base material; layered above mesh so soft-light blends correctly */
+  --texture-bg-image:    url("../assets/design/exports/frutiger-v1/bg-clear-gel-frutiger-v1.jpg");
+  --texture-bg-opacity:  0.05;
+  --texture-bg-blend:    soft-light;
+  --noise-dither-opacity: 0.025;
+  --noise-dither-blend: overlay;
+  /* gamma layer disabled — aero-wave is too graphic; re-enable when noise-gel-256.png is added */
+  --texture-gamma-image: none;
+  --texture-gamma-opacity: 0;
+  --texture-gamma-blend: normal;
+
+  font-family: var(--font-ui);
+}
+
+@font-face {
+  font-family: "TokyoSoft";
+  src: url("../assets/design/Font/TokyoSoft.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Futury-Light";
+  src: url("../assets/design/Font/Futury-Light.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   WINDOW FRAME — completely bare so .shell creates real transparent cutouts
+   ══════════════════════════════════════════════════════════════════════════ */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  border-radius: var(--shell-radius);
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font-ui);
+  color: var(--text-strong);
+  /*
+   * Stack (first = top, last = bottom):
+   *  1. gloss veil       — normal      — subtle white highlight
+   *  2. shell-surface    — normal      — frosted-glass tint
+   *  3. texture-bg-image — soft-light  — gel texture blends INTO mesh below
+   *  4. base-bg          — normal      — Clear Gel mesh, solid base
+   *  5. captured-tab-img — soft-light  — live tab capture if active
+   */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(227, 236, 246, 0.18) 100%),
+    var(--shell-surface),
+    var(--base-bg),
+    var(--captured-tab-image);
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+  background-position: center, center, center, center top;
+  background-size: cover, cover, cover, cover;
+  background-blend-mode: normal, normal, normal, soft-light;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  background-image: var(--texture-bg-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 122% 122%;
+  filter: saturate(0.92) contrast(0.96);
+  mix-blend-mode: var(--texture-bg-blend);
+  opacity: var(--texture-bg-opacity);
+}
+
+body::after {
+  background-image:
+    radial-gradient(120% 72% at 50% -6%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(120% 96% at 50% 110%, rgba(168, 183, 199, 0.10) 0%, rgba(168, 183, 199, 0) 70%),
+    repeating-radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.04) 0 0.7px, rgba(0, 0, 0, 0) 0.7px 3.1px),
+    repeating-radial-gradient(circle at 74% 62%, rgba(67, 81, 99, 0.025) 0 0.55px, rgba(0, 0, 0, 0) 0.55px 2.6px);
+  background-size: cover, cover, 3px 3px, 2px 2px;
+  mix-blend-mode: var(--noise-dither-blend);
+  opacity: var(--noise-dither-opacity);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   .shell — the Frutiger Aero glass panel
+   ══════════════════════════════════════════════════════════════════════════ */
+.shell {
+  min-width: 320px;
+  width: auto;
+  min-height: 100%;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+  isolation: auto;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 18px;
+  border: none;
+  background: #bec6d0;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.28);
+  will-change: auto;
+  transform: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.shell::before,
+.shell::after {
+  display: none;
+}
+
+.shell::before {
+  content: none;
+}
+
+.shell::after {
+  content: none;
+}
+
+.panel {
+  background: transparent;
+  display: block;
+  padding: 2px 8px 10px;
+  width: 100%;
+  max-height: 560px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  /* macOS-style thin scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155,111,232,0.45) transparent;
+}
+
+.panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(155,111,232,0.40);
+}
+
+.panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(155,111,232,0.65);
+}
+
+/* ── Floating glass deck: each section is its own capsule ── */
+.control-section {
+  margin-bottom: 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: var(--card-surface);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Frutiger Aero gloss stripe: the defining gel highlight */
+.control-section::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 17px 17px 0 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.54) 0%, rgba(255, 255, 255, 0.18) 36%, transparent 100%);
+}
+
+.control-section:last-child {
+  margin-bottom: 0;
+}
+
+.accordion-section > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 14px 10px 16px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  color: var(--text-strong);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 16px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  position: relative;
+  z-index: 1;
+
+  background: rgba(255, 255, 255, 0.54);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transition: filter var(--motion-fast) ease, transform var(--motion-fast) ease;
+}
+
+.accordion-section > summary:hover {
+  filter: brightness(1.04) saturate(110%);
+  transform: translateY(-1px);
+}
+
+.accordion-section > summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), inset 0 1px 0 rgba(255,255,255,0.98);
+}
+
+.accordion-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion-section > summary::after {
+  content: "\25bc";
+  font-size: 11px;
+  color: var(--accent-primary);
+  transition: transform 120ms ease;
+}
+
+.accordion-section[open] > summary {
+  border-radius: 16px 16px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.44);
+}
+
+.accordion-section[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.accordion-section > .section-body {
+  padding: 12px 14px 14px;
+  transform-origin: top center;
+  animation: sectionReveal var(--motion-med) ease both;
+}
+
+.nested-accordion {
+  margin: 12px 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.50);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.70), rgba(248, 251, 255, 0.62));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.nested-accordion > summary {
+  text-transform: none;
+  letter-spacing: 0.2px;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--text-strong);
+  border-radius: 10px;
+  padding: 8px 11px;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  transition: transform var(--motion-fast) ease, filter var(--motion-fast) ease;
+}
+
+.nested-accordion > summary:hover {
+  filter: saturate(108%);
+  transform: translateY(-1px);
+}
+
+h1 {
+  margin: 0 -14px 14px;
+  padding: 14px 18px 13px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  color: var(--text-strong);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.70);
+  text-transform: none;
+  flex-shrink: 0;
+
+  background: rgba(255, 255, 255, 0.54);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 2px 10px rgba(0, 0, 0, 0.08);
+
+  position: relative;
+  z-index: 3;
+}
+
+button:disabled {
+  opacity: 0.50;
+  cursor: not-allowed;
+}
+
+/* ── Status indicator badge ── */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  padding: 5px 12px 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25px;
+  color: var(--text-strong);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Glowing dot before status text */
+.status::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7ef0c0 0%, #22c47a 55%, #0a8a52 100%);
+  box-shadow: 0 0 6px rgba(34,196,122,0.70);
+  flex-shrink: 0;
+}
+
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* Give consecutive action groups visible breathing room between them */
+.actions + .actions {
+  margin-top: 4px;
+}
+
+.actions > button {
+  flex: 1 1 calc(50% - 4px);
+}
+
+#openStablePanel {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #1e6aad 0%, #145490 100%);
+}
+
+.actions.single-action > button {
+  flex-basis: 100%;
+}
+
+.section-reset-actions {
+  margin-top: 8px;
+  margin-bottom: 14px;
+}
+
+.section-reset-actions button {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #6e7f8e 0%, #4e5f6c 100%);
+}
+
+.actions.two-up > button {
+  flex-basis: calc(50% - 4px);
+}
+
+.recording-actions {
+  margin-bottom: 12px;
+}
+
+.subsection-title {
+  margin: 10px 0 12px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #152540;
+  opacity: 0.88;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.20);
+  margin: 18px 0;
+}
+
+#audioFileInput {
+  width: 100%;
+  font-size: 12px;
+}
+
+.recording-actions button {
+  width: auto;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #19b07a 0%, #097a52 100%);
+}
+
+#stopRecording {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #e04848 0%, #b52a2a 100%);
+}
+
+#downloadWav {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.36) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #4a5e70 0%, #2e3f4e 100%);
+}
+
+#downloadMp3 {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #7050b0 0%, #4c2e8a 100%);
+}
+
+#downloadProcessedWav {
+  width: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #b06020 0%, #7a3e08 100%);
+}
+
+h2 {
+  margin: 12px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.presets button {
+  padding: 6px 8px;
+  font-size: 12px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #8272e0 0%, #5a48c0 100%);
+}
+
+.presets button:hover:not(:disabled) {
+  filter: brightness(1.08) saturate(110%);
+}
+
+#presetClear {
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #606e7a 0%, #3e4e5a 100%) !important;
+  grid-column: 1 / -1;
+}
+
+button {
+  border: 1px solid rgba(136, 112, 235, 0.55);
+  border-radius: 999px;   /* full pill */
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.22);
+  letter-spacing: 0.2px;
+
+  /* Aero gel button: restrained modern gloss with purple-led body */
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.60) 0%,
+      rgba(255,255,255,0.12) 50%,
+      rgba(0,0,0,0.04)       100%
+    ),
+    linear-gradient(
+      to bottom,
+      #a28ef3 0%,
+      #886fe4 48%,
+      #7053cf 100%
+    );
+
+  box-shadow:
+    inset 0  1px 0 rgba(255,255,255,0.72),   /* top glint */
+    inset 0 -6px 12px rgba(56,34,116,0.24),   /* depth shadow */
+    0 3px 8px rgba(46,30,98,0.28),            /* drop shadow */
+    0 1px 0   rgba(255,255,255,0.20);         /* ground highlight */
+
+  transition: transform var(--motion-fast) ease,
+              box-shadow var(--motion-fast) ease,
+              filter var(--motion-fast) ease;
+}
+
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06) saturate(112%);
+  box-shadow:
+    inset 0  1px 0 rgba(255,255,255,0.80),
+    inset 0 -6px 12px rgba(56,34,116,0.24),
+    0 5px 14px rgba(46,30,98,0.34),
+    var(--accent-glow);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow:
+    inset 0  1px 0 rgba(255,255,255,0.55),
+    inset 0  4px 8px rgba(56,34,116,0.30),
+    0 1px 3px rgba(46,30,98,0.20);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select {
+  border: 1px solid rgba(140,200,235,0.85);
+  border-radius: 999px;
+  padding: 7px 12px;
+  color: var(--text-strong);
+  background: rgba(255,255,255,0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.92),
+    inset 0 2px 6px rgba(10,60,120,0.08);
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+/* Checkbox and radio: reset to native appearance, no pill styling */
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: auto;
+  appearance: auto;
+  border: none;
+  border-radius: 3px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+input[type="range"] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(179, 155, 255, 0.85);
+  background: linear-gradient(90deg, rgba(155,111,232,0.30), rgba(200,175,255,0.38));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: radial-gradient(circle at 30% 25%, #ffffff 0%, #cde8ff 55%, #90c9ff 100%);
+  box-shadow: 0 2px 6px rgba(34, 73, 128, 0.28);
+}
+
+.control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label value"
+    "input input";
+  gap: 6px 12px;
+  margin-bottom: 16px;
+  margin-top: 0;
+  font-size: 13px;
+}
+
+/* First control in any section gets extra top breathing room
+   so the checkbox / label top edge isn't clipped by the card's border-radius */
+.section-body > .control:first-child,
+.section-body > label.control:first-child {
+  margin-top: 4px;
+}
+
+/* Remove duplicate checkbox rule now handled above */
+.control > span {
+  grid-area: label;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Inline checkboxes inside .control span — handled by global checkbox rule above */
+
+.control > output {
+  grid-area: value;
+  color: #1e3050;
+  font-weight: 600;
+}
+
+.control > input,
+.control > select {
+  grid-area: input;
+  width: 100%;
+}
+
+.hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #2a4060;
+}
+
+.hint-text {
+  margin: 6px 0;
+  font-size: 12px;
+  color: #2a4060;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.compact-hint {
+  margin: 0 0 12px;
+}
+
+.quirk-note {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-left: 3px solid rgba(200,170,255,0.80);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(240,252,255,0.90), rgba(210,240,255,0.65));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.96),
+    inset 0 -4px 10px rgba(30,100,160,0.08);
+  color: #152540;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.quirk-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: #2a4060;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.quirk-list li {
+  margin-bottom: 6px;
+}
+
+.loaded-audio-workspace {
+  margin: 14px 0;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(140,210,245,0.75);
+  background: linear-gradient(160deg, rgba(250,254,255,0.88), rgba(220,242,255,0.70));
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.03),
+    inset 0 1px 0 rgba(255,255,255,0.95);
+}
+
+.loaded-audio-workspace > summary {
+  color: #152540;
+  font-weight: 700;
+  padding: 10px 12px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.92), rgba(220,240,255,0.75));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.98);
+  border-radius: 13px;
+  cursor: pointer;
+}
+
+.waveform-container {
+  margin: 14px 0;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(140,210,245,0.75);
+  background: linear-gradient(160deg, rgba(250,254,255,0.88), rgba(220,242,255,0.70));
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.03),
+    inset 0 1px 0 rgba(255,255,255,0.95);
+}
+
+.waveform-info {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  margin-bottom: 10px;
+  padding: 8px 12px 0;
+  color: #152540;
+  font-weight: 600;
+}
+
+.waveform-info span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.waveform-info output {
+  font-weight: 600;
+  font-family: "Monaco", "Courier New", monospace;
+}
+
+#trimmedDuration {
+  margin-left: auto;
+  color: #085c30;
+  font-weight: 600;
+}
+
+.waveform-wrapper {
+  position: static;
+  margin-bottom: 8px;
+}
+
+/* ── Waveform canvas: frosted glass inset ── */
+.waveform-canvas {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(240,250,255,0.92), rgba(210,238,255,0.80));
+  border: 1px solid rgba(140,205,240,0.80);
+  border-radius: 12px;
+  cursor: pointer;
+  display: block;
+  box-shadow:
+    inset 0 2px 8px rgba(10,60,120,0.10),
+    inset 0 1px 0  rgba(255,255,255,0.90);
+}
+
+
+.scrubber-slider {
+  position: static;
+  display: block;
+  width: 100%;
+  height: 16px;
+  opacity: 1;
+  cursor: pointer;
+  margin: 8px 0 0;
+  padding: 0;
+  accent-color: #085c30;
+}
+
+.waveform-timeline {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #2a4060;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.timeline-label {
+  font-family: "Monaco", "Courier New", monospace;
+  font-weight: 500;
+}
+
+.trim-controls {
+  margin-top: 10px;
+}
+
+.trim-controls .control {
+  margin-bottom: 10px;
+}
+
+.voice-isolation-section {
+  margin: 14px 0;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(63,200,232,0.70);
+  background: linear-gradient(160deg, rgba(240,252,255,0.95), rgba(210,245,255,0.75));
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.02),
+    inset 0 1px 0 rgba(255,255,255,0.96),
+    0 0 0 1px rgba(63,200,232,0.30);
+}
+
+.voice-isolation-section > summary {
+  color: #152540;
+  font-weight: 700;
+  padding: 10px 12px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.92), rgba(210,240,255,0.80));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.98);
+  border-radius: 13px;
+  cursor: pointer;
+}
+
+.voice-isolation-section .hint-text {
+  font-size: 12px;
+  color: #1e3050;
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.voice-isolation-section .control[for="enableVoiceIsolation"] {
+  background: linear-gradient(165deg, rgba(255,255,255,0.92), rgba(240,252,255,0.75));
+  border: 1px solid rgba(63,200,232,0.60);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.95);
+  padding: 11px;
+  margin: 11px 0;
+}
+
+.voice-isolation-section .control[for="enableVoiceIsolation"] span {
+  color: #152540;
+  font-weight: 700;
+}
+
+.stem-section {
+  margin: 14px 0;
+  padding: 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.84), rgba(239, 244, 255, 0.66));
+  border-radius: 16px;
+  border: 1px solid rgba(191, 228, 255, 0.84);
+}
+
+.stem-section > summary {
+  color: #1e3050;
+}
+
+.companion-setup-hint {
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-left: 3px solid rgba(200,170,255,0.75);
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #152540;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.95);
+}
+
+.companion-setup-hint p {
+  margin: 0 0 8px;
+}
+
+.companion-setup-hint ol {
+  margin: 6px 0 8px;
+  padding-left: 20px;
+}
+
+.companion-setup-hint li {
+  margin-bottom: 6px;
+}
+
+.companion-setup-hint code {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(240,248,255,0.80));
+  border: 1px solid rgba(140,200,235,0.70);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-family: "Monaco", "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: #152540;
+}
+
+.stem-section h3 {
+  margin: 12px 0 6px 0;
+  font-size: 13px;
+  color: #1e3050;
+}
+
+.source-stem-grid {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 10px 0;
+}
+
+.source-stem-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 4px 10px;
+  align-items: center;
+}
+
+.source-stem-download-btn {
+  padding: 6px 10px;
+  font-size: 11px;
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.36) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #4a7e98 0%, #2e5870 100%);
+}
+
+.stem-download-section {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(143, 121, 255, 0.35);
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.94), rgba(241, 232, 255, 0.54));
+}
+
+.stem-download-section > summary {
+  padding: 0;
+  color: #152540;
+  font-weight: 700;
+}
+
+.stem-download-section > .section-body {
+  padding: 8px 0 0;
+}
+
+.stem-download-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.stem-download-actions button {
+  width: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #8272e0 0%, #5a48c0 100%);
+  font-size: 12px;
+}
+
+.stem-cleanup-section {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(137, 179, 214, 0.72);
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.92), rgba(226, 241, 255, 0.62));
+}
+
+.stem-cleanup-section > summary {
+  padding: 0;
+  color: #1e3050;
+  font-weight: 700;
+}
+
+.stem-cleanup-section > .section-body {
+  padding: 8px 0 0;
+}
+
+.stem-cleanup-section .stem-download-actions button {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #3a80c8 0%, #245fa0 100%);
+}
+
+.stem-transport {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(143, 121, 255, 0.36);
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.94), rgba(234, 244, 255, 0.64));
+}
+
+.stem-transport .hint-text {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e3050;
+}
+
+.stem-transport .actions {
+  margin-bottom: 0;
+  justify-content: center;
+  gap: 6px;
+}
+
+.stem-transport button {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.stem-section .control[for="useLiveStemMixing"] {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(226, 253, 242, 0.66));
+  border: 1px solid rgba(84, 175, 132, 0.58);
+  border-radius: 14px;
+  padding: 10px;
+  margin: 12px 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.stem-section .control[for="useLiveStemMixing"] span {
+  color: #085c30;
+  font-weight: bold;
+}
+
+.stem-section .control[for="useStudioStemQuality"] {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(247, 241, 227, 0.72));
+  border: 1px solid rgba(157, 122, 58, 0.55);
+  border-radius: 14px;
+  padding: 10px;
+  margin: 10px 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.stem-section .control[for="useStudioStemQuality"] span {
+  color: #6a4b16;
+  font-weight: bold;
+}
+
+#generateStems {
+  width: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #8272e0 0%, #5a48c0 100%);
+}
+
+#checkCompanion {
+  width: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.04) 50%, transparent 100%),
+    linear-gradient(to bottom, #3a80c8 0%, #245fa0 100%);
+}
+
+#generateStems[data-busy="true"] {
+  opacity: 0.9;
+  cursor: progress;
+}
+
+/* ── Progress bars: aqua shimmer fill ── */
+@keyframes aeroShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.stem-progress {
+  margin: 8px 0 10px 0;
+  border: 1px solid rgba(140,200,240,0.55);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.80);
+  box-shadow: inset 0 1px 3px rgba(10,60,120,0.12);
+}
+
+.stem-progress-fill {
+  height: 8px;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #3fc8e8 0%,
+    #a0ecff 45%,
+    #3fc8e8 55%,
+    #1ea8c8 100%
+  );
+  background-size: 200% 100%;
+  animation: aeroShimmer 1.6s linear infinite;
+  transition: width 120ms linear;
+  box-shadow: 0 0 8px rgba(63,200,232,0.55);
+}
+
+.prep-progress {
+  border: 1px solid rgba(140,200,240,0.55);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.80);
+  box-shadow: inset 0 1px 3px rgba(10,60,120,0.12);
+}
+
+.prep-progress-fill {
+  height: 8px;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #3fc8e8 0%,
+    #a0ecff 45%,
+    #3fc8e8 55%,
+    #1ea8c8 100%
+  );
+  background-size: 200% 100%;
+  animation: aeroShimmer 1.6s linear infinite;
+  transition: width 800ms linear;
+  box-shadow: 0 0 8px rgba(63,200,232,0.55);
+}
+
+
+.stem-progress-text {
+  display: block;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #1e3050;
+}
+
+/* Instrumental preparation card */
+.instrumental-prep-card {
+  margin: 10px 0 4px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(169, 148, 215, 0.5);
+  border-radius: 8px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.92), rgba(235, 246, 255, 0.64));
+}
+
+.instrumental-prep-card[data-phase="capturing"] {
+  border-color: rgba(84, 175, 132, 0.62);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.93), rgba(228, 253, 244, 0.72));
+}
+
+.instrumental-prep-card[data-phase="processing"] {
+  border-color: rgba(115, 93, 255, 0.58);
+}
+
+.instrumental-prep-card[data-phase="ready"] {
+  border-color: rgba(84, 175, 132, 0.64);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.93), rgba(228, 253, 244, 0.76));
+}
+
+#voiceIsolationAdvancedSection {
+  margin-top: 10px;
+}
+
+#stemPlaybackBandsSection {
+  margin-top: 10px;
+}
+
+.prep-headline {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3050;
+}
+
+.prep-detail {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: #1e3050;
+}
+
+/* Remove old prep-progress rules now merged above */
+.prep-progress-text {
+  display: block;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: #1e3050;
+}
+
+
+@keyframes sectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.prep-progress-text {
+  display: block;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: #1e3050;
+}
+
+.prep-actions {
+  margin-top: 8px;
+}
+
+.prep-download-btn {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #2a6e2a;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.prep-download-btn:hover {
+  background: #1e521e;
+}
+
+.stem-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+}
+
+.stem-grid .control {
+  margin-bottom: 2px;
+}
+
+.stem-mute {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #2a4060;
+  gap: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordion-section > summary,
+  .nested-accordion > summary,
+  button,
+  .accordion-section > .section-body {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .shell,
+  .control-section,
+  .nested-accordion,
+  h1,
+  .status {
+    background: rgba(255, 255, 255, 0.28) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .shell {
+    border-color: rgba(202, 210, 224, 0.92) !important;
+  }
+
+  .accordion-section > summary,
+  .nested-accordion > summary {
+    background: rgba(255, 255, 255, 0.24) !important;
+  }
+
+  body::before {
+    opacity: 0.52 !important;
+    mix-blend-mode: soft-light !important;
+  }
+
+  body::after {
+    opacity: 0.09 !important;
+  }
+}
+
+/* macOS refinement pass: reduce novelty and push native hierarchy */
+.shell {
+  padding: 12px;
+  border-radius: 18px;
+  background: transparent;
+}
+
+.panel {
+  padding: 0 2px 12px;
+}
+
+h1 {
+  /* Remove negative-margin bleed — it creates hard edges inside the rounded shell */
+  margin: 0 0 10px;
+  padding: 4px 4px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  text-shadow: none;
+  background: none;
+  border-bottom: none;
+  box-shadow: none;
+  color: rgba(17, 24, 39, 0.90);
+}
+
+.status {
+  margin: 0 0 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.07);
+  border: none;
+  box-shadow: none;
+}
+
+.status::before {
+  width: 7px;
+  height: 7px;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.30);
+}
+
+#captureSection {
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+#captureSection::before {
+  display: none;
+}
+
+#captureSection > summary {
+  min-height: 44px;
+  padding: 12px 16px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(31, 41, 55, 0.94);
+  background: transparent;
+}
+
+#captureSection[open] > summary {
+  background: transparent;
+}
+
+#captureSection > .section-body {
+  padding: 2px 12px 14px;
+  border-top: none;
+}
+
+#captureSection .compact-hint,
+#captureSection .hint-text {
+  margin-bottom: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(75, 85, 99, 0.88);
+}
+
+#captureSection .subsection-title {
+  margin: 10px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(55, 65, 81, 0.88);
+}
+
+#captureSection .actions {
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* Unify captureSection buttons with global button style — no separate overrides */
+#captureSection button {
+  min-height: 34px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#captureSection #startCapture {
+  border-color: rgba(10, 132, 255, 0.68);
+  background: linear-gradient(180deg, rgba(77, 170, 255, 0.94) 0%, rgba(10, 132, 255, 0.96) 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(6, 72, 146, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    0 4px 10px rgba(10, 132, 255, 0.16);
+}
+
+#captureSection #startCapture::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0) 80%);
+}
+
+/* captureSection secondary buttons inherit global button style — no overrides needed */
+
+#captureSection .quirk-note {
+  margin: 8px 0 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: rgba(75, 85, 99, 0.82);
+}
+
+#captureSection #recordingStatus {
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.30);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+.control-section {
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+}
+
+.control-section::before {
+  display: none;
+}
+
+.accordion-section > summary {
+  padding: 13px 16px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  background: transparent;
+  box-shadow: none;
+}
+
+.accordion-section[open] > summary {
+  background: transparent;
+  border-bottom: none;
+}
+
+.accordion-section > .section-body {
+  padding: 2px 14px 14px;
+}
+
+.nested-accordion {
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: none;
+}
+
+.nested-accordion > summary {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.subsection-title {
+  margin: 12px 0 10px;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(29, 41, 64, 0.78);
+}
+
+.control {
+  gap: 8px 12px;
+  margin-bottom: 18px;
+}
+
+.control > span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.control > output,
+.hint,
+.hint-text,
+.waveform-info,
+.waveform-timeline,
+.stem-progress-text,
+.prep-progress-text {
+  color: rgba(37, 49, 73, 0.82);
+}
+
+button {
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 10px;
+  padding: 7px 13px;
+  position: relative;
+  overflow: hidden;
+  color: #1f2937;
+  text-shadow: none;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+}
+
+button::after {
+  display: none;
+}
+
+button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.01);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 4px 10px rgba(15, 23, 42, 0.10);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.98);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.76),
+    inset 0 2px 4px rgba(15, 23, 42, 0.10);
+}
+
+#startCapture,
+#startVoiceIsolation,
+#generateStems,
+#checkCompanion,
+#loadLastRecording,
+#playLoadedAudio,
+#stemPlayLoadedAudio,
+#downloadProcessedWav,
+#downloadStemMix {
+  border-color: rgba(10, 132, 255, 0.72);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(8, 58, 124, 0.42);
+  background: linear-gradient(180deg, rgba(64, 166, 255, 0.96) 0%, rgba(10, 132, 255, 0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 6px 14px rgba(10, 132, 255, 0.24);
+}
+
+#startCapture::before,
+#startVoiceIsolation::before,
+#generateStems::before,
+#checkCompanion::before,
+#loadLastRecording::before,
+#playLoadedAudio::before,
+#stemPlayLoadedAudio::before,
+#downloadProcessedWav::before,
+#downloadStemMix::before {
+  display: none;
+}
+
+#startCapture::after,
+#startVoiceIsolation::after,
+#generateStems::after,
+#checkCompanion::after,
+#loadLastRecording::after,
+#playLoadedAudio::after,
+#stemPlayLoadedAudio::after,
+#downloadProcessedWav::after,
+#downloadStemMix::after {
+  display: none;
+}
+
+#startCapture:hover:not(:disabled),
+#startVoiceIsolation:hover:not(:disabled),
+#generateStems:hover:not(:disabled),
+#checkCompanion:hover:not(:disabled),
+#loadLastRecording:hover:not(:disabled),
+#playLoadedAudio:hover:not(:disabled),
+#stemPlayLoadedAudio:hover:not(:disabled),
+#downloadProcessedWav:hover:not(:disabled),
+#downloadStemMix:hover:not(:disabled) {
+  filter: brightness(1.04) saturate(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 8px 16px rgba(10, 132, 255, 0.28);
+}
+
+#stopCapture,
+#stopRecording,
+#stopVoiceIsolation,
+#cancelStemGeneration,
+#presetClear,
+#pauseLoadedAudio,
+#stopLoadedAudio,
+#stemPauseLoadedAudio,
+#stemStopLoadedAudio {
+  border-color: rgba(203, 210, 223, 0.96);
+  color: #253149;
+  background: linear-gradient(180deg, rgba(248, 249, 252, 0.96) 0%, rgba(233, 237, 243, 0.98) 100%) !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select {
+  border: 1px solid rgba(201, 208, 221, 0.95);
+  border-radius: 10px;
+  padding: 8px 11px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border: none;
+  background: linear-gradient(90deg, rgba(206, 214, 226, 0.92), rgba(221, 227, 236, 0.92));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -4px;
+  border: 1px solid rgba(186, 194, 210, 0.96);
+  background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.16);
+}
+
+.quirk-note,
+.companion-setup-hint,
+.loaded-audio-workspace,
+.waveform-container,
+.voice-isolation-section,
+.stem-section,
+.stem-download-section,
+.stem-cleanup-section,
+.stem-transport,
+.instrumental-prep-card {
+  border-color: rgba(215, 222, 234, 0.92);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(246, 248, 253, 0.24) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   macOS Control Center pass #2 — solid opaque material (no glass layering)
+   macOS Control Center is NOT glassmorphism. It is a solid opaque panel.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Body — solid macOS-accurate cool gray. This IS the surface, not a backdrop. */
+html, body {
+  background: #9faebb;
+  background-blend-mode: normal;
+}
+
+/* 2. Kill all pseudo-element overlays — they only add white noise over the solid base */
+body::before,
+body::after {
+  display: none;
+}
+
+/* 3. Shell — solid opaque, no border (Chrome popup already has a native frame).
+      Slightly lighter than the body to create the panel elevation. */
+.shell {
+  background: #bec6d0;
+  border: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.28);
+}
+
+/* 3. Remove Frutiger gloss stripe from ALL section cards.
+      Cards get their hierarchy from border + inset highlight, not a gloss sweep. */
+.control-section::before,
+#captureSection::before {
+  display: none;
+}
+
+/* 4. Scrollbar — neutral system gray, not purple */
+.panel {
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
+
+.panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+/* 5. Accordion chevron — neutral, not accent-primary purple */
+.accordion-section > summary::after {
+  color: rgba(0, 0, 0, 0.36);
+}
+
+/* 6. Section divider when open — very subtle, not bright white */
+.accordion-section[open] > summary {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* 7. Status dot glow — reduce to macOS system-green level */
+.status::before {
+  box-shadow: 0 0 3px rgba(34, 197, 94, 0.28);
+}
+
+/* 8. h1 header — match Control Center panel title weight */
+h1 {
+  background: rgba(255, 255, 255, 0.14);
+  border-bottom-color: rgba(0, 0, 0, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  color: rgba(17, 24, 39, 0.92);
+}
+
+/* 9. Nested cards and inset sub-surfaces — quieter material */
+.quirk-note,
+.companion-setup-hint,
+.loaded-audio-workspace,
+.waveform-container,
+.voice-isolation-section,
+.stem-section,
+.stem-download-section,
+.stem-cleanup-section,
+.stem-transport,
+.instrumental-prep-card {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+}
+
+/* 10. body::after is already hidden above; no-op safety rule */
+body::after {
+  display: none;
+}

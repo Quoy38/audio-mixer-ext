@@ -1,0 +1,78 @@
+# companion_app/requirements.lock
+# =============================================================================
+# FULLY-PINNED, KNOWN-GOOD dependency set for the Audio Mixer companion app.
+#
+# WHY THIS FILE EXISTS (read before changing anything):
+#   The voice-isolation feature broke 20+ times "with zero code edits" because
+#   requirements.txt left torch/torchaudio/numpy LOOSE (>=). A background pip
+#   reinstall or transitive update pulled a newer torch, which silently changed
+#   Demucs' MPS / segmenting / OOM behavior and made /v1/stems/split return 500
+#   on byte-identical code. This lock freezes the EXACT versions that are verified
+#   working on Apple Silicon (MPS) so the environment can never drift underneath us.
+#
+# CAPTURED FROM the running service's venv on 2026-07-07 via:
+#   .venv/bin/python -m pip freeze --all
+# Verified working: torch 2.2.2 + torchaudio 2.2.2 + numpy 1.26.4 + demucs 4.0.1,
+# Python 3.11, torch.backends.mps.is_available() == True.
+#
+# HOW TO USE (canonical install path):
+#   python3.11 -m venv .venv
+#   .venv/bin/python -m pip install -r companion_app/requirements.lock
+#
+# requirements.txt remains the human-readable top-level spec; THIS file is the
+# reproducible source of truth the installer and doctor.sh check against.
+# To intentionally bump a dependency: change it in a venv, re-run the freeze,
+# re-run checkpoints/release_gate.sh, and only then commit the new lock.
+# =============================================================================
+annotated-types==0.7.0
+antlr4-python3-runtime==4.9.3
+anyio==4.12.1
+click==8.3.1
+cloudpickle==3.1.2
+Cython==3.2.4
+demucs==4.0.1
+diffq==0.2.4
+dora_search==0.1.12
+einops==0.8.2
+fastapi==0.115.2
+filelock==3.25.2
+fsspec==2026.2.0
+h11==0.16.0
+httptools==0.7.1
+idna==3.11
+Jinja2==3.1.6
+julius==0.2.7
+lameenc==1.8.2
+MarkupSafe==3.0.3
+ml_dtypes==0.5.4
+mpmath==1.3.0
+networkx==3.6.1
+numpy==1.26.4
+omegaconf==2.3.0
+onnx==1.20.1
+openunmix==1.3.0
+packaging==26.0
+pillow==12.2.0
+pip==26.1.1
+protobuf==7.34.0
+pydantic_core==2.41.5
+pydantic==2.12.5
+pypdf==6.10.2
+python-dotenv==1.2.2
+PyYAML==6.0.3
+retrying==1.4.2
+setuptools==82.0.1
+starlette==0.40.0
+submitit==1.5.4
+sympy==1.14.0
+torch==2.2.2
+torchaudio==2.2.2
+tqdm==4.67.3
+treetable==0.2.6
+typing_extensions==4.15.0
+typing-inspection==0.4.2
+uvicorn==0.30.6
+uvloop==0.22.1
+watchfiles==1.1.1
+websockets==16.0
+wheel==0.46.3

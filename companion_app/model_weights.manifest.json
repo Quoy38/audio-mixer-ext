@@ -1,0 +1,42 @@
+{
+  "_README": "Integrity manifest for the Demucs model weights. doctor.sh validates the ACTIVE model only (companion_app/companion_profile.json -> \"model\"), so switching htdemucs <-> htdemucs_ft never false-alarms on the other model's files. Each model is a torch-hub download in ~/.cache/torch/hub/checkpoints/; the filename suffix is demucs's own truncated-sha256 checksum. If any file is missing, truncated, or corrupted, /v1/stems/split fails and isolation breaks. demucs re-downloads with no user-visible progress and a partial download can silently corrupt a file, so doctor.sh checks size (+ sha256 with --deep) up front instead of mid-session. htdemucs = single-file model (~80 MB, fast, real-time live-isolation default). htdemucs_ft = bag of 4 fine-tuned sub-models (~320 MB, ~4x slower, slightly cleaner offline path).",
+  "cache_dir": "~/.cache/torch/hub/checkpoints",
+  "active_model_source": "companion_app/companion_profile.json (\"model\")",
+  "models": {
+    "htdemucs": {
+      "signatures": ["955717e8"],
+      "files": [
+        {
+          "name": "955717e8-8726e21a.th",
+          "size": 84141911,
+          "sha256": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4"
+        }
+      ]
+    },
+    "htdemucs_ft": {
+      "signatures": ["f7e0c4bc", "d12395a8", "92cfc3b6", "04573f0d"],
+      "files": [
+        {
+          "name": "f7e0c4bc-ba3fe64a.th",
+          "size": 84141271,
+          "sha256": "ba3fe64ae8ef66ac9a4857222ce48efbdc5eb3ad375cb79dd13debee5aaa4066"
+        },
+        {
+          "name": "d12395a8-e57c48e6.th",
+          "size": 84141271,
+          "sha256": "e57c48e6b0e38af4f7118d7bd08c49f0a0c0edf7d09143bdd902ea0d237303e6"
+        },
+        {
+          "name": "92cfc3b6-ef3bcb9c.th",
+          "size": 84141271,
+          "sha256": "ef3bcb9c8b40d14ae5d51b6db2587339cc12c6b77c0be151ce6d69002e087bf2"
+        },
+        {
+          "name": "04573f0d-f3cf25b2.th",
+          "size": 84141271,
+          "sha256": "f3cf25b222c4eed7cd49dd8b2c9597d50c18bd154090f7b919cfa5f93cf22c49"
+        }
+      ]
+    }
+  }
+}

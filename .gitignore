@@ -1,0 +1,34 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Models & large binaries (fetched/generated, not source)
+models/
+libs/
+
+# Bundled self-contained companion runtime (built by build_macos_runtime.sh; ~1 GB)
+companion_app/runtime/
+
+# Built installer artifacts (uploaded to GitHub Releases, not committed)
+companion_app/build/dist/
+
+# Checkpoint archives (large; checksums are tracked, tarballs are not)
+checkpoints/*.tar.gz
+
+# Logs
+*.log
+companion.log
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+# Local workspace and signing credentials
+.tmp
+*.p12
+*.pfx
+*.key
+*.pem

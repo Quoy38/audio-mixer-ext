@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Label must match the filename (without .plist) -->
+  <key>Label</key>
+  <string>com.audiomixerext.companion</string>
+
+  <!-- Absolute path to the Python interpreter in the venv.
+       install-macos-service.sh rewrites COMPANION_PYTHON_PATH before copying this file. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>COMPANION_PYTHON_PATH</string>
+    <string>COMPANION_SERVER_PATH</string>
+  </array>
+
+  <!-- Working directory so relative imports resolve -->
+  <key>WorkingDirectory</key>
+  <string>COMPANION_APP_DIR</string>
+
+  <!-- Runtime environment for Demucs inference tuning -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>AUDIO_MIXER_DEMUCS_DEVICE</key>
+    <string>COMPANION_DEMUCS_DEVICE</string>
+    <!-- Separation model. htdemucs (single pass) is ~4x faster than htdemucs_ft and
+         is required for real-time live voice isolation to keep up with 20 s chunks.
+         Set to htdemucs_ft for the slower, slightly cleaner offline path. -->
+    <key>AUDIO_MIXER_DEMUCS_MODEL</key>
+    <string>htdemucs</string>
+    <key>AUDIO_MIXER_DEMUCS_OVERLAP</key>
+    <string>0.25</string>
+    <key>AUDIO_MIXER_DEMUCS_FAST_SHORT_CLIPS</key>
+    <string>0</string>
+    <key>AUDIO_MIXER_DEMUCS_FAST_SHORT_MAX_SECONDS</key>
+    <string>75</string>
+    <key>AUDIO_MIXER_DEMUCS_FAST_MEDIUM_CLIPS</key>
+    <string>1</string>
+    <key>AUDIO_MIXER_DEMUCS_FAST_MEDIUM_MAX_SECONDS</key>
+    <string>180</string>
+    <key>AUDIO_MIXER_DEMUCS_FAST_MEDIUM_SEGMENT_SECONDS</key>
+    <string>30</string>
+    <!-- Disable MPS memory cap so large segments don't OOM and fall back to slow CPU -->
+    <key>PYTORCH_MPS_HIGH_WATERMARK_RATIO</key>
+    <string>0.0</string>
+    <!-- Allow PyTorch to fall back to CPU ops when MPS cannot execute a kernel -->
+    <key>PYTORCH_ENABLE_MPS_FALLBACK</key>
+    <string>1</string>
+    <!-- Explicit CA bundle paths for Python HTTPS in launchd context -->
+    <key>SSL_CERT_FILE</key>
+    <string>COMPANION_SSL_CERT_FILE</string>
+    <key>REQUESTS_CA_BUNDLE</key>
+    <string>COMPANION_SSL_CERT_FILE</string>
+    <key>CURL_CA_BUNDLE</key>
+    <string>COMPANION_SSL_CERT_FILE</string>
+  </dict>
+
+  <!-- Start automatically on login -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Restart automatically if the process crashes or is killed (non-zero exit).
+       SuccessfulExit: false means launchd will NOT restart on a clean exit(0).
+       The port-already-in-use guard in server.py exits 0 so launchd stops
+       looping when another instance is already running. Real crashes exit non-zero
+       and are still auto-restarted. -->
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+
+  <!-- Throttle rapid restarts (e.g. if demucs model is missing) -->
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <!-- Log files -->
+  <key>StandardOutPath</key>
+  <string>COMPANION_LOG_OUT</string>
+  <key>StandardErrorPath</key>
+  <string>COMPANION_LOG_ERR</string>
+
+  <!-- Only run for the logged-in user (not as root) -->
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

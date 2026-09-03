@@ -1,0 +1,12 @@
+# Human-readable top-level dependency spec.
+# ⚠️  The INSTALLER and doctor.sh use companion_app/requirements.lock (fully pinned)
+#     as the reproducible source of truth. torch/torchaudio/numpy are intentionally
+#     LOOSE here but PINNED in the lock — leaving them loose here is what let the
+#     environment drift and break isolation with zero code edits. Prefer the lock.
+fastapi==0.115.2
+uvicorn[standard]==0.30.6
+demucs==4.0.1
+torch>=2.2.0
+torchaudio>=2.2.0
+numpy<2
+diffq>=0.2.4
