@@ -2367,22 +2367,50 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   line-height: 1.44;
 }
 
-.companion-setup-hint code {
-  font-family: "Monaco", "Menlo", "SF Mono", monospace;
-  font-size: 10.5px;
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.32);
-  border: 1px solid rgba(166, 207, 255, 0.20);
-  color: var(--label);
-}
-
-.pro-setup-actions {
+.pro-download-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
   padding: 6px 12px 12px;
 }
 
-.pro-setup-actions > button {
-  width: 100%;
+.pro-download-button {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  padding: 7px 8px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid rgba(62, 116, 188, 0.48);
+  border-radius: var(--radius-control);
+  background: linear-gradient(180deg, #6aa8ef 0%, #4c88d8 100%);
+  box-shadow:
+    0 2px 5px rgba(58, 141, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  font-size: var(--text-caption);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.pro-download-button span {
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 500;
+  opacity: 0.86;
+}
+
+.pro-download-button:hover {
+  background: linear-gradient(180deg, #79b5f3 0%, #5a95e0 100%);
+}
+
+.pro-download-button:focus-visible {
+  outline: 2px solid rgba(58, 141, 255, 0.75);
+  outline-offset: 2px;
 }
 
 .loaded-audio-workspace,

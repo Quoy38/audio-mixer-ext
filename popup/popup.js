@@ -384,7 +384,6 @@ const companionStatusEl = document.getElementById("companionStatus");
 const stemSectionEl = document.getElementById("stemSection");
 const checkCompanionBtn = document.getElementById("checkCompanion");
 const restartCompanionBtn = document.getElementById("restartCompanion");
-const copyCompanionSetupBtn = document.getElementById("copyCompanionSetup");
 const sourceStemControlsEl = document.getElementById("sourceStemControls");
 const downloadStemMixBtn = document.getElementById("downloadStemMix");
 const downloadAllStemsBtn = document.getElementById("downloadAllStems");
@@ -10195,24 +10194,6 @@ if (checkCompanionBtn) {
 if (restartCompanionBtn) {
   restartCompanionBtn.addEventListener("click", async () => {
     await restartCompanionEngine();
-  });
-}
-
-if (copyCompanionSetupBtn) {
-  copyCompanionSetupBtn.addEventListener("click", async () => {
-    const cmd = "bash companion_app/install-macos-service.sh";
-    try {
-      await navigator.clipboard.writeText(cmd);
-      const original = copyCompanionSetupBtn.textContent;
-      copyCompanionSetupBtn.textContent = "Copied!";
-      copyCompanionSetupBtn.disabled = true;
-      setTimeout(() => {
-        copyCompanionSetupBtn.textContent = original;
-        copyCompanionSetupBtn.disabled = false;
-      }, 2000);
-    } catch (_) {
-      // Clipboard unavailable — silently ignore
-    }
   });
 }
 
