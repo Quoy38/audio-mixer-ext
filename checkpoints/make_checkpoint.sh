@@ -67,7 +67,7 @@ CANDIDATES=(
   checkpoints/parity/parity_harness.py checkpoints/parity/run_parity_check.sh
   checkpoints/parity/golden/htdemucs_44100.json
   AGENTS.md
-  CHANGELOG.md COMPANION_APP_PROTOCOL.md READY_TO_TEST.md
+  CHANGELOG.md PRODUCT_ROADMAP.md COMPANION_APP_PROTOCOL.md READY_TO_TEST.md
   VOICE_ISOLATION_INTEGRATION.md VOICE_ISOLATION_STATUS.md OPTIMIZATIONS.md README.md
 )
 

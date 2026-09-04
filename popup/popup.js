@@ -250,6 +250,7 @@ const LIVE_COMPANION_STARTUP_PREFETCH_CHUNKS = 1;
 
 let recordingDestination = null;
 let mediaRecorder = null;
+let recordingStartPending = false;
 let recordingChunks = [];
 let lastRecordingBlob = null;
 let lastRecordingObjectUrl = null;
@@ -484,6 +485,7 @@ const stemStopLoadedAudioBtn = document.getElementById("stemStopLoadedAudio");
 // Waveform state
 let trimStartSeconds = 0;
 let trimEndSeconds = 0;
+let loadedAudioSourceType = "unknown";
 let currentPlaybackSeconds = 0;
 let waveformDrawingContext = null;
 let animationFrameId = null;
@@ -1030,6 +1032,7 @@ function serializeWaveformSessionState() {
   return {
     trimStartSeconds,
     trimEndSeconds,
+    loadedAudioSourceType,
     currentPlaybackSeconds,
     waveformZoom,
     waveformScrollOffset,
@@ -1081,6 +1084,9 @@ function applyRestoredWaveformSessionState(rawState) {
 
   trimStartSeconds = start;
   trimEndSeconds = end;
+  loadedAudioSourceType = ["file", "recording", "stale-recording"].includes(rawState.loadedAudioSourceType)
+    ? rawState.loadedAudioSourceType
+    : "unknown";
   currentPlaybackSeconds = playback;
   waveformZoom = zoom;
   waveformScrollOffset = offset;
@@ -1098,6 +1104,7 @@ function applyRestoredWaveformSessionState(rawState) {
   }
 
   updateWaveformDisplay();
+  updateRecordingButtons();
 }
 
 async function syncSessionCacheToOffscreen() {
@@ -1901,10 +1908,17 @@ async function setVoiceIsolationFromControls(enable) {
 function updateRecordingButtons() {
   const captureActive = Boolean(stream);
   const isRecording = mediaRecorder?.state === "recording";
+  const editRange = loadedAudioSourceType === "recording" && loadedAudioBuffer
+    ? getAudioEditRange(loadedAudioBuffer)
+    : null;
+  const recordingIsTrimmed = Boolean(
+    editRange && (editRange.startFrame > 0 || editRange.endFrame < loadedAudioBuffer.length)
+  );
 
-  startRecordingBtn.disabled = !captureActive || isRecording;
+  startRecordingBtn.disabled = !captureActive || isRecording || recordingStartPending;
   stopRecordingBtn.disabled = !isRecording;
   downloadWavBtn.disabled = !lastRecordingBlob;
+  downloadWavBtn.textContent = recordingIsTrimmed ? "Download Trimmed WAV" : "Download WAV";
   downloadMp3Btn.disabled = !lastRecordingBlob;
   loadLastRecordingBtn.disabled = !lastRecordingBlob;
   
@@ -2991,6 +3005,7 @@ function applyFilterValues() {
 
 // Active Signalsmith Stretch node (exposes .schedule(), .start(), etc.)
 let stretchNode = null;
+let stretchNodeReadyPromise = null;
 
 async function createSignalsmithNode(context) {
   if (typeof SignalsmithStretch !== "function") {
@@ -5185,8 +5200,9 @@ async function buildAudioGraph(capturedStream) {
 
   // Asynchronously wire Signalsmith Stretch between inputMixNode and bassNode/dryGainNode.
   // Graph starts in direct-bypass mode; pitch becomes active once the WASM node is ready.
-  createSignalsmithNode(audioContext).then(node => {
-    if (!node || audioContext.state === "closed") return;
+  const stretchContext = audioContext;
+  stretchNodeReadyPromise = createSignalsmithNode(stretchContext).then(node => {
+    if (!node || audioContext !== stretchContext || stretchContext.state === "closed") return null;
     stretchNode = node;
     pitchShifterNode = node;
     // Remove direct bypass connections
@@ -5201,6 +5217,7 @@ async function buildAudioGraph(capturedStream) {
     // Apply the current pitch slider value
     updatePitchShifterNode();
     console.log("[Pitch] Signalsmith Stretch node ready.");
+    return node;
   });
 
   recordingDestination = audioContext.createMediaStreamDestination();
@@ -5317,6 +5334,8 @@ function tearDownAudioGraph() {
   outputLevelAnalyserNode = null;
   recordingDestination = null;
   rawCaptureDestination = null;
+  recordingStartPending = false;
+  stretchNodeReadyPromise = null;
   outputDestinationConnected = false;
 
   if (audioContext) {
@@ -5779,14 +5798,28 @@ function startCapture({ isReconnect = false } = {}) {
   });
 }
 
-function startRecording() {
+async function startRecording() {
   if (!stream || !recordingDestination) {
     setRecordingStatus("start capture first");
     return;
   }
 
-  if (mediaRecorder?.state === "recording") {
+  if (mediaRecorder?.state === "recording" || recordingStartPending) {
     return;
+  }
+
+  if (Number(pitchInput.value) !== 0 && !stretchNode) {
+    recordingStartPending = true;
+    updateRecordingButtons();
+    setRecordingStatus("preparing pitch processor...");
+    const pitchReadyPromise = stretchNodeReadyPromise;
+    const readyPitchNode = await withTimeout(pitchReadyPromise || Promise.resolve(null), 10000, null);
+    recordingStartPending = false;
+    updateRecordingButtons();
+    if (!readyPitchNode || !stream || !recordingDestination) {
+      setRecordingStatus("pitch processor unavailable - reset pitch or restart capture");
+      return;
+    }
   }
 
   // Stop any active playback to prevent audio collision
@@ -5832,6 +5865,10 @@ function startRecording() {
     const outputType = mediaRecorder?.mimeType || mimeType || "audio/webm";
     lastRecordingBlob = new Blob(recordingChunks, { type: outputType });
     lastRecordingAudioBuffer = null;
+    if (loadedAudioSourceType === "recording") {
+      loadedAudioSourceType = "stale-recording";
+      scheduleSessionCacheSync();
+    }
 
     if (lastRecordingObjectUrl) {
       URL.revokeObjectURL(lastRecordingObjectUrl);
@@ -6197,7 +6234,10 @@ async function requestCompanionStems(sourceBuffer, requestedStems = ["vocals", "
 
   // Pass through device_used so callers can detect CPU fallback.
   if (payload.device_used) {
-    parsedStems._deviceUsed = payload.device_used;
+    Object.defineProperty(parsedStems, "_deviceUsed", {
+      value: payload.device_used,
+      enumerable: false
+    });
   }
 
   return parsedStems;
@@ -7027,6 +7067,75 @@ function getProcessedSourceStemBuffer(stemName, stemBuffer) {
   return processed;
 }
 
+function getAudioEditRange(sourceBuffer = loadedAudioBuffer) {
+  if (!sourceBuffer) return null;
+
+  const sampleRate = sourceBuffer.sampleRate;
+  const startSeconds = Number.isFinite(trimStartSeconds) ? trimStartSeconds : 0;
+  const endSeconds = Number.isFinite(trimEndSeconds) && trimEndSeconds > 0
+    ? trimEndSeconds
+    : sourceBuffer.duration;
+  const startFrame = Math.max(0, Math.min(sourceBuffer.length - 1, Math.floor(startSeconds * sampleRate)));
+  const endFrame = Math.max(startFrame + 1, Math.min(sourceBuffer.length, Math.ceil(endSeconds * sampleRate)));
+
+  return {
+    startFrame,
+    endFrame,
+    frameCount: endFrame - startFrame,
+    startSeconds: startFrame / sampleRate,
+    endSeconds: endFrame / sampleRate
+  };
+}
+
+function materializeAudioEditRange(sourceBuffer) {
+  const range = getAudioEditRange(sourceBuffer);
+  if (!range || (range.startFrame === 0 && range.endFrame === sourceBuffer.length)) {
+    return sourceBuffer;
+  }
+
+  const sliced = new AudioBuffer({
+    length: range.frameCount,
+    numberOfChannels: sourceBuffer.numberOfChannels,
+    sampleRate: sourceBuffer.sampleRate
+  });
+  for (let channel = 0; channel < sourceBuffer.numberOfChannels; channel += 1) {
+    sliced.getChannelData(channel).set(
+      sourceBuffer.getChannelData(channel).subarray(range.startFrame, range.endFrame)
+    );
+  }
+  return sliced;
+}
+
+function alignBufferToSourceTimeline(segmentBuffer, sourceBuffer, startFrame) {
+  const aligned = new AudioBuffer({
+    length: sourceBuffer.length,
+    numberOfChannels: sourceBuffer.numberOfChannels,
+    sampleRate: sourceBuffer.sampleRate
+  });
+  const offset = Math.max(0, Math.min(sourceBuffer.length - 1, startFrame));
+  const copyLength = Math.min(segmentBuffer.length, sourceBuffer.length - offset);
+
+  for (let channel = 0; channel < sourceBuffer.numberOfChannels; channel += 1) {
+    const sourceChannel = segmentBuffer.getChannelData(Math.min(channel, segmentBuffer.numberOfChannels - 1));
+    aligned.getChannelData(channel).set(sourceChannel.subarray(0, copyLength), offset);
+  }
+  return aligned;
+}
+
+function invalidateGeneratedStemsForEditRangeChange() {
+  const hadGeneratedStems = Boolean(splitStemBuffers || sourceStemBuffers);
+  if (stemGenerationAbortController) {
+    stemGenerationAbortController.abort();
+  }
+  splitStemBuffers = null;
+  setSourceStemBuffers(null);
+  useStemMixPlaybackInput.checked = false;
+  if (hadGeneratedStems) {
+    setStemStatus("trim changed - regenerate stems");
+    setSourceStemStatus("none - trim changed");
+  }
+}
+
 async function downloadSourceStem(stemName) {
   if (!sourceStemBuffers || !sourceStemBuffers[stemName]) {
     setSourceStemStatus("none");
@@ -7034,8 +7143,9 @@ async function downloadSourceStem(stemName) {
   }
 
   const stemBuffer = getProcessedSourceStemBuffer(stemName, sourceStemBuffers[stemName]);
+  const editedStemBuffer = materializeAudioEditRange(stemBuffer);
   const cleanupEnabled = Boolean(ensureStemCleanupSettings(stemName).enabled);
-  const wavBlob = audioBufferToWavBlob(stemBuffer);
+  const wavBlob = audioBufferToWavBlob(editedStemBuffer);
   const success = await triggerBlobDownload(
     wavBlob,
     "wav",
@@ -7061,7 +7171,7 @@ async function downloadCurrentSourceStemMix() {
     return false;
   }
 
-  const wavBlob = audioBufferToWavBlob(sourceMix);
+  const wavBlob = audioBufferToWavBlob(materializeAudioEditRange(sourceMix));
   const success = await triggerBlobDownload(wavBlob, "wav", "audio-mixer-stem-mix");
   setSourceStemStatus(success ? "downloaded current stem mix" : "failed to download current stem mix");
   return success;
@@ -8363,6 +8473,9 @@ async function generateStems() {
     return;
   }
 
+  const editRange = getAudioEditRange(loadedAudioBuffer);
+  const stemInputBuffer = materializeAudioEditRange(loadedAudioBuffer);
+
   const abortController = new AbortController();
   stemGenerationAbortController = abortController;
   const { signal } = abortController;
@@ -8377,7 +8490,7 @@ async function generateStems() {
 
     setStemBusy(true);
     setStemProgress(0, "Starting stem generation...");
-    setStemStatus("Hybrid split in progress (AI vocals + pro drums/bass/other)...");
+    setStemStatus(`Hybrid split in progress (${stemInputBuffer.duration.toFixed(1)}s selected range)...`);
     setSourceStemStatus("generating vocals with vocal isolation AI + splitting drums/bass/other...");
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -8394,10 +8507,10 @@ async function generateStems() {
     };
 
     const companionPromise = requestCompanionStems(
-      loadedAudioBuffer, ["drums", "bass", "other"], { signal }
+      stemInputBuffer, ["drums", "bass", "other"], { signal }
     ).then((result) => { companionDone = true; refreshProgress(); return result; });
 
-    const kuielabPromise = requestKuielabVocalIsolation(loadedAudioBuffer, {
+    const kuielabPromise = requestKuielabVocalIsolation(stemInputBuffer, {
       signal,
       onProgress: (fraction) => { kuielabFraction = fraction; refreshProgress(); }
     });
@@ -8409,15 +8522,25 @@ async function generateStems() {
       ...bandStems,
       vocals: isolatedVocals
     };
-    setSourceStemBuffers(stemsByName);
+    const alignedStemsByName = Object.fromEntries(
+      Object.entries(stemsByName).map(([name, buffer]) => [
+        name,
+        alignBufferToSourceTimeline(buffer, loadedAudioBuffer, editRange.startFrame)
+      ])
+    );
+    setSourceStemBuffers(alignedStemsByName);
 
-    const vocals = isolatedVocals || loadedAudioBuffer;
-    const instrumental = subtractBuffers(loadedAudioBuffer, vocals);
+    const vocals = isolatedVocals || stemInputBuffer;
+    const instrumental = subtractBuffers(stemInputBuffer, vocals);
     const [low, high] = await Promise.all([
       renderBandStemFromBuffer(instrumental, "low"),
       renderBandStemFromBuffer(instrumental, "high")
     ]);
-    splitStemBuffers = { low, mid: vocals, high };
+    splitStemBuffers = {
+      low: alignBufferToSourceTimeline(low, loadedAudioBuffer, editRange.startFrame),
+      mid: alignBufferToSourceTimeline(vocals, loadedAudioBuffer, editRange.startFrame),
+      high: alignBufferToSourceTimeline(high, loadedAudioBuffer, editRange.startFrame)
+    };
 
     activateStemMixPlayback();
     const stemNames = sourceStemBuffers ? Object.keys(sourceStemBuffers) : [];
@@ -8500,7 +8623,10 @@ async function downloadWav() {
 
   try {
     setRecordingStatus("preparing wav...");
-    const decodedBuffer = await decodeLastRecordingBuffer();
+    const useEditedRecording = loadedAudioSourceType === "recording" && loadedAudioBuffer;
+    const decodedBuffer = useEditedRecording
+      ? materializeAudioEditRange(loadedAudioBuffer)
+      : await decodeLastRecordingBuffer();
     if (!decodedBuffer) {
       setRecordingStatus("unable to decode recording");
       return;
@@ -8508,7 +8634,8 @@ async function downloadWav() {
 
     const wavBlob = audioBufferToWavBlob(decodedBuffer);
     const success = await triggerBlobDownload(wavBlob, "wav");
-    setRecordingStatus(success ? "downloaded wav recording" : "wav download failed");
+    const successText = useEditedRecording ? "downloaded selected recording wav" : "downloaded wav recording";
+    setRecordingStatus(success ? successText : "wav download failed");
   } catch (error) {
     console.error("[Audio Mixer] WAV export failed", error);
     setRecordingStatus("wav export failed");
@@ -8895,11 +9022,12 @@ function resumeRecordedAudio() {
   startLoadedAudioPlayback({ seekTime: currentPlaybackSeconds, forceStemMix: lastLoadedPlaybackUsedStemMix });
 }
 
-async function loadBlobAsAudio(blob, label) {
+async function loadBlobAsAudio(blob, label, { sourceType = "file" } = {}) {
   console.log("[Popup] loadBlobAsAudio called with label:", label, "blob size:", blob.size);
   try {
     stopLoadedAudio({ silent: true });
     loadedAudioBuffer = await decodeBlobToAudioBuffer(blob);
+    loadedAudioSourceType = sourceType;
     splitStemBuffers = null;
     setSourceStemBuffers(null);
     setStemStatus("not generated");
@@ -8907,6 +9035,7 @@ async function loadBlobAsAudio(blob, label) {
     setLoadedStatus(`${label} (${loadedAudioBuffer.duration.toFixed(1)}s)`);
     showWaveformEditor();
     updateLoadedAudioButtons();
+    updateRecordingButtons();
     await persistSessionCacheToIndexedDbNow();
     scheduleSessionCacheSync();
   } catch (error) {
@@ -8921,7 +9050,7 @@ async function loadLastRecordingAsAudio() {
     return;
   }
 
-  await loadBlobAsAudio(lastRecordingBlob, "last recording loaded");
+  await loadBlobAsAudio(lastRecordingBlob, "last recording loaded", { sourceType: "recording" });
 }
 
 async function downloadProcessedLoadedAudioWav() {
@@ -8949,6 +9078,20 @@ async function downloadProcessedLoadedAudioWav() {
 
     const fx = createFxGraph(offlineContext);
     fx.outputGainNode.connect(offlineContext.destination);
+
+    const pitchSemitones = Number(pitchInput.value);
+    if (pitchSemitones !== 0) {
+      const offlineStretchNode = await createSignalsmithNode(offlineContext);
+      if (!offlineStretchNode) {
+        throw new Error("Pitch processor unavailable for processed export");
+      }
+      fx.inputMixNode.disconnect(fx.bassNode);
+      fx.inputMixNode.disconnect(fx.dryGainNode);
+      fx.inputMixNode.connect(offlineStretchNode);
+      offlineStretchNode.connect(fx.bassNode);
+      offlineStretchNode.connect(fx.dryGainNode);
+      offlineStretchNode.schedule({ semitones: pitchSemitones });
+    }
 
     const filterStrength = Number(effectMixInput.value);
     const interpolated = activeFilterPreset ? getInterpolatedFilterSettings(activeFilterPreset, filterStrength) : null;
@@ -9387,6 +9530,8 @@ function stopWaveformAnimation() {
 function showWaveformEditor() {
   console.log("[Popup] showWaveformEditor called, loadedAudioBuffer:", loadedAudioBuffer ? `${loadedAudioBuffer.duration.toFixed(2)}s` : "null");
   waveformContainer.style.display = "block";
+  recordedPlaybackSectionEl.open = true;
+  waveformContainer.open = true;
   if (stemWaveformContainer) {
     stemWaveformContainer.style.display = "block";
   }
@@ -10066,14 +10211,18 @@ if (resetCleanupForStemBtn) {
 trimStartInput.addEventListener("input", () => {
   trimStartSeconds = Math.min(Number(trimStartInput.value), trimEndSeconds - 0.01);
   trimStartInput.value = String(trimStartSeconds);
+  invalidateGeneratedStemsForEditRangeChange();
   updateWaveformDisplay();
+  updateRecordingButtons();
   scheduleSessionCacheSync();
 });
 
 trimEndInput.addEventListener("input", () => {
   trimEndSeconds = Math.max(Number(trimEndInput.value), trimStartSeconds + 0.01);
   trimEndInput.value = String(trimEndSeconds);
+  invalidateGeneratedStemsForEditRangeChange();
   updateWaveformDisplay();
+  updateRecordingButtons();
   scheduleSessionCacheSync();
 });
 

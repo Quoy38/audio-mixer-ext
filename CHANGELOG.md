@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+- Public Apple Silicon and Intel companion download actions in the offline Pro Engine setup card.
+- Sample-accurate, non-destructive edit-range helpers for downstream Stem Separation and exports.
+- `PRODUCT_ROADMAP.md` as the current product status and launch-work summary.
+
+### Changed
+- Loaded and restored audio now expands the Recorded Playback and Waveform editor automatically.
+- Trimmed ranges now drive companion and Kuielab separation, individual stem downloads, stem-mix downloads, and Recording WAV export after loading the last recording.
+- Changing trim cancels active generation and invalidates stale stems.
+- Recording with nonzero pitch now waits for the Signalsmith processor; Processed WAV export now applies the selected pitch shift.
+- Waveform UI terminology replaces the inaccurate "Wavetable" label.
+
+### Fixed
+- Companion `_deviceUsed` metadata no longer enters audio-stem iteration during trimmed separation.
+- Recording WAV downloads can export the selected trimmed range instead of always exporting the full recording.
+
 ## [1.1.1] - 2026-07-15
 
 ### Added

@@ -8,6 +8,9 @@ The goal is simple: make future edits easier without changing any runtime file l
 > [`AGENTS.md`](AGENTS.md) is the authoritative operational + regression guide (fragile code,
 > the anti-drift lock system, the validation gate, and self-heal). This README is the file map.
 
+Current product status, decisions, and remaining launch work are tracked in
+[`PRODUCT_ROADMAP.md`](PRODUCT_ROADMAP.md).
+
 ## Quick Companion Install (macOS)
 
 - Double-click `Install Companion.command` in the repo root for one-click setup.
