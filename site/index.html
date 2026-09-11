@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Salvo — Sample &amp; Stem Studio</title>
+  <meta name="description" content="Salvo is a Sample & Stem Studio: capture or load audio, edit it, and split any song into vocals, drums, bass, and other — right in your browser." />
+
+  <!-- Open Graph / social -->
+  <meta property="og:title" content="Salvo — Sample & Stem Studio" />
+  <meta property="og:description" content="Split any song into stems. Sample, remix, and reassemble sound — privately, on your machine." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://salvo.studio/" />
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Salvo home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Salvo</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#privacy-note">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <p class="eyebrow">Sample &amp; Stem Studio</p>
+        <h1 class="hero-title">Split any song into&nbsp;stems.<br />Sample, remix, reassemble.</h1>
+        <p class="hero-sub">
+          Salvo captures or loads audio, lets you edit it — trim, speed, pitch, effects —
+          and separates it into <strong>vocals, drums, bass,</strong> and <strong>other</strong>.
+          Runs privately on your own machine.
+        </p>
+
+        <div class="cta-row">
+          <!-- TODO: replace # with the Chrome Web Store listing URL once published -->
+          <a class="btn btn-primary" href="#" data-cta="chrome">Add to Chrome</a>
+          <!-- TODO: replace # with the signed .pkg download URL -->
+          <a class="btn btn-secondary" href="#" data-cta="companion">Download macOS companion</a>
+        </div>
+        <p class="cta-note">Free. Private. No account required.</p>
+
+        <!-- Demo slot: drop a before/after stem-split clip or screenshot here -->
+        <div class="demo" role="img" aria-label="Product demo placeholder">
+          <div class="demo-inner">
+            <span class="demo-label">Demo coming soon</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section">
+      <div class="wrap">
+        <h2 class="section-title">Built for people who take sound apart</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>AI stem separation</h3>
+            <p>Isolate vocals, drums, bass, and other from any track — fast, on-device, no upload.</p>
+          </article>
+          <article class="card">
+            <h3>Real editing</h3>
+            <p>Trim, time-stretch, pitch-shift, and add effects. Shape the sample before you flip it.</p>
+          </article>
+          <article class="card">
+            <h3>Private by default</h3>
+            <p>The local engine is offline, unlimited, and accountless. Your audio never leaves your Mac.</p>
+          </article>
+          <article class="card">
+            <h3>Right in the browser</h3>
+            <p>A lightweight extension with a popup and a side panel — capture what's playing and go.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" class="section section-alt">
+      <div class="wrap">
+        <h2 class="section-title">How it works</h2>
+        <ol class="steps">
+          <li><span class="step-n">1</span> Install the extension and the free macOS companion.</li>
+          <li><span class="step-n">2</span> Capture what's playing, or load an audio file.</li>
+          <li><span class="step-n">3</span> Split into stems and edit — then export your sample.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Privacy note -->
+    <section id="privacy-note" class="section">
+      <div class="wrap narrow">
+        <h2 class="section-title">Your audio stays yours</h2>
+        <p class="prose">
+          Salvo's on-device engine processes everything locally — no uploads, no account,
+          no tracking of what you make. Read the full
+          <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">Salvo — Sample &amp; Stem Studio</p>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="mailto:hello@salvo.studio">Contact</a>
+      </nav>
+      <p class="footer-copy">&copy; <span id="year">2026</span> Salvo. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
